@@ -1007,8 +1007,8 @@ def loop2gempy(test_data_name: str, tmp_path: str, vtk_path: str, orientations_f
         geo_model.set_topography(source='gdal', filepath=fp)
 
         # Rescaling topography:
-        geo_model.grid.topography.values[:, 2] *= va
-        geo_model.grid.update_grid_values()
+        geo_model._grid.topography.values[:, 2] *= va
+        geo_model._grid.update_grid_values()
         geo_model.update_from_grid()
 
     # Pile processing:
@@ -1050,7 +1050,10 @@ def loop2gempy(test_data_name: str, tmp_path: str, vtk_path: str, orientations_f
         gp.compute_model(geo_model)
 
     # Visualise Model
-    gp.plot.plot_3D(geo_model, render_data=False)
+    #gp.plot.plot_3D(geo_model, render_data=False)
+    p3d = gp.plot_3d(geo_model, plotter_type='background', notebook=False)
+
+    p3d3 = gp.plot_3d(geo_model, notebook=True)
 
     # Save model as vtk
     if vtk:
