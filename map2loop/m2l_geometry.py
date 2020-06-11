@@ -48,7 +48,7 @@ def save_orientations(structures,path_out,c_l,orientation_decimate,dtm,dtb,dtb_n
                             dipdir=apoint[c_l['dd']]+90
                         else:
                             dipdir=apoint[c_l['dd']]
-                        if(apoint[c_l['bo']]==apoint[c_l['btype']]):
+                        if(apoint[c_l['bo']]==c_l['btype']):
                             polarity=0
                         else:
                             polarity=1
