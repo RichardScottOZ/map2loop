@@ -48,9 +48,13 @@ def save_orientations(structures,path_out,c_l,orientation_decimate,dtm,dtb,dtb_n
                             dipdir=apoint[c_l['dd']]+90
                         else:
                             dipdir=apoint[c_l['dd']]
+                        if(apoint[c_l['bo']]==apoint[c_l['btype']]):
+                            polarity=0
+                        else:
+                            polarity=1
                         ostr="{},{},{},{},{},{},{}\n"\
                             .format(apoint['geometry'].x,apoint['geometry'].y,height,dipdir,apoint[c_l['d']],
-                                    1,apoint[c_l['c']].replace(" ","_").replace("-","_"))   
+                                    polarity,apoint[c_l['c']].replace(" ","_").replace("-","_"))   
                         #ostr=str(apoint['geometry'].x)+","+str(apoint['geometry'].y)+","+height+","+str(dipdir)+","+str(apoint[c_l['d']])+",1,"+str(apoint[c_l['c']].replace(" ","_").replace("-","_"))+"\n"
                         f.write(ostr)
                 i=i+1

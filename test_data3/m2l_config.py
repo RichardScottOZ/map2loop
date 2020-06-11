@@ -40,6 +40,8 @@ c_l= {
   "sf": 'FEATURE',             #field that contains information on type of structure
   "bedding": 'Bed',            #text to search for in field defined by sf code to show that this is a bedding measurement
   "otype": 'dip direction',            #flag to determine measurement convention (currently 'strike' or 'dip direction')
+  "bo": "STRUCTYPEI",             #field that contains type of foliation
+  "btype": 'BEOI',            #text to search for in field defined by bo code to show that this is an overturned bedding measurement
 #Stratigraphy
   "g": 'GROUP_',               #field that contains coarser stratigraphic coding
   "g2": 'SUPERSUITE',              #field that contains alternate coarser stratigraphic coding if 'g' is blank
