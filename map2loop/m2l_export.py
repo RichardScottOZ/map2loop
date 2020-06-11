@@ -842,23 +842,25 @@ def loop2geomodeller2(model_name,test_data_path,tmp_path,output_path,dtm_file,bb
         f.writelines(ostr)
         f.close()
 
-from pyamg import solve
-def solve_pyamg(A,B):
-    return solve(A,B,verb=False,tol=1e-8)
-
 ##########################################################################
 # Import outputs from map2loop to LoopStructural and view with Lavavu
 #
 # loop2LoopStructural(thickness_file,orientation_file,contacts_file,bbox)
 # Args:
-# thickness_file path of fornation thickness file
-# orientation_file path of orientations file
-# contacts_file path of contacts file
 # bbox model bounding box
 #
 # Calculates model and displays in LavaVu wthin notebook
 ##########################################################################
-def loop2LoopStructural(directory):
+def loop2LoopStructural(m2l_directory):
+    """ create a model from a map2loop directory
+
+    [extended_summary]
+
+    Parameters
+    ----------
+    m2l_directory : string
+        path to the map2loop directory
+    """
     visualise = False
     ## make sure everything is installed and can be imported
     try:
@@ -874,7 +876,7 @@ def loop2LoopStructural(directory):
         print("Lavavu is not installed, try installing it with pip \n"
               "Model will be built but cannot be visualised")
 
-    m2l_data = process_map2loop(directory)
+    m2l_data = process_map2loop(m2l_directory)
     boundary_points = np.zeros((2, 3))
     boundary_points[0, 0] = m2l_data['bounding_box']['minx']
     boundary_points[0, 1] = m2l_data['bounding_box']['miny']
@@ -893,7 +895,7 @@ def loop2LoopStructural(directory):
         fault_id = f[6:]
         overprints = []
         try:
-            overprint_id = fault_fault_relations[fault_fault_relations[fault_id] == 1]['fault_id'].to_numpy()
+            overprint_id = m2l_data['fault_fault'][m2l_data['fault_fault'][fault_id] == 1]['fault_id'].to_numpy()
             for i in overprint_id:
                 overprints.append(['Fault_%i' % i])
         except:
