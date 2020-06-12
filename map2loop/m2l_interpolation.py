@@ -1329,9 +1329,8 @@ def interpolate_contacts_grid(contacts,calc,xcoords_group,ycoords_group):
                 i=i+1
         else:
             if(  m2l_utils.mod_safe(i,decimate)  ==0):
-                if(m2l_utils.mod_safe(i,decimate)  ==0):
-                    listarray.append([acontact.geometry.coords[0][0], acontact.geometry.coords[0][1]])
-                i=i+1
+                listarray.append([acontact.geometry.coords[0][0], acontact.geometry.coords[0][1]])
+            i=i+1
 
     coords = np.array(listarray)
     if(is_odd(len(coords))):
