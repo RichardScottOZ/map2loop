@@ -1365,7 +1365,9 @@ def interpolate_contacts_grid(contacts,calc,xcoords_group,ycoords_group):
         m2=ZIm/np.sqrt(ZIl**2+ZIm**2)
         S=np.degrees(np.arctan2(l2,m2))
                         
-    return(l2,m2,S)
+        return(l2,m2,S)
+    else:
+        return(0,0,0)
     
     
 
@@ -1425,7 +1427,7 @@ def interpolation_grids(geology_file,structure_file,basal_contacts,bbox,spacing,
                 xy_lmn=np.vstack((xcoords_group,ycoords_group,l,m,n,d,dd)).transpose()
                 xy_lmn=xy_lmn.reshape(len(l),7)
             else:
-                print(groups,'have no structures')
+                print(groups,'has no structures')
 
                 xy_lmn=np.zeros((5,len(xcoords_group)))    
                 xy_lmn=np.vstack((xcoords_group,ycoords_group,xy_lmn)).transpose()
@@ -1433,10 +1435,15 @@ def interpolation_grids(geology_file,structure_file,basal_contacts,bbox,spacing,
                                              
             if(len(all_contacts)>0):
                 l,m,S=interpolate_contacts_grid(all_contacts,scheme,xcoords_group,ycoords_group)  
-                xy_lm_contacts=np.vstack((xcoords_group,ycoords_group,l,m,S)).transpose()
-                xy_lm_contacts=xy_lm_contacts.reshape(len(l),5)
+                if(type(l) is not int):                   
+                    xy_lm_contacts=np.vstack((xcoords_group,ycoords_group,l,m,S)).transpose()
+                    xy_lm_contacts=xy_lm_contacts.reshape(len(l),5)
+                else:
+                    xy_lm_contacts=np.zeros((3,len(xcoords_group)))   
+                    xy_lm_contacts=np.vstack((xcoords_group,ycoords_group,xy_lm_contacts)).transpose()
+                    xy_lm_contacts=xy_lm_contacts.reshape(len(xcoords_group),5)
             else:
-                print(groups,'have no contacts')
+                print(groups,'has no contacts')
 
                 xy_lm_contacts=np.zeros((3,len(xcoords_group)))   
                 xy_lm_contacts=np.vstack((xcoords_group,ycoords_group,xy_lm_contacts)).transpose()
