@@ -64,8 +64,8 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,tmp_path,bbox,c
         if(nans>0):
             error='map2loop error: '+str(nans)+' NaN/blank found in column '+str(c_l[code])+' of geology file'
             raise NameError(error)
-
-    for code in ('c'):
+    for code in ('c','g','g2'):
+        geology[c_l[code]].fillna("", inplace = True) 
         commas=geology[geology[c_l[code]].str.contains(",")]
         if(len(commas)>0):
             error='map2loop error: comma found in column '+str(c_l[code])+' of geology file'
