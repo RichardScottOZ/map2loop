@@ -30,7 +30,7 @@ Path to geology data file                           =../scratch/tmp/geology_file
 Path to faults data file                            =../scratch/tmp/fault_file.csv
 Path to mineral deposits data file                  =../scratch/tmp/mindep_file.csv
 ------------------------------------------------------------------------------------------------
-Clipping window X1 Y1 X2 Y2 (zeros for infinite)    =505763.48543867806 7490997.8057236355 540638.3829541447 7516941.3788861465
+Clipping window X1 Y1 X2 Y2 (zeros for infinite)    =488056.3412540542 7496910.78187464 544279.1124386563 7516625.574231605
 Min length fraction for strat/fault graphs          =0.0
 Graph edge width categories (three doubles)         =2000. 20000. 200000.
 Graph edge direction (0-min age, 1-max age, 2-avg)  =2

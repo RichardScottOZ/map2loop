@@ -22,6 +22,7 @@ from map2loop import m2l_utils
 # id_label code for eacah node that defines node type (group or formation)
 ####################################
 def get_series(path_in,id_label):
+
     G=nx.read_gml(path_in,label=id_label) # load a stratigraphy with groups (no longer true?: needs to feed via yed!!)
 
     glabels = {}
