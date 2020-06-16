@@ -1373,11 +1373,11 @@ def interpolate_contacts_grid(contacts,calc,xcoords_group,ycoords_group):
 
 def interpolation_grids(geology_file,structure_file,basal_contacts,bbox,spacing,dst_crs,scheme,super_groups,c_l):
     geology = gpd.read_file(geology_file,bbox=bbox)
-    structures = gpd.read_file(structure_file,bbox=bbox)
+    structures_code = gpd.read_file(structure_file,bbox=bbox)
     contacts = gpd.read_file(basal_contacts,bbox=bbox)
 
-    geology[c_l['g']].fillna(geology[c_l['g2']], inplace=True)
-    geology[c_l['g']].fillna(geology[c_l['c']], inplace=True)
+    #geology[c_l['g']].fillna(geology[c_l['g2']], inplace=True)
+    #geology[c_l['g']].fillna(geology[c_l['c']], inplace=True)
     
     if(spacing<0):
         spacing=-(bbox[2]-bbox[0])/spacing
@@ -1396,7 +1396,7 @@ def interpolation_grids(geology_file,structure_file,basal_contacts,bbox,spacing,
     nodes=gpd.GeoDataFrame(xycoords, geometry=[Point(xy) for xy in zip(xcoords, ycoords)])
     nodes.crs=dst_crs
     nodes_code = gpd.sjoin(nodes, geology, how="left", op="within")
-    structures_code = gpd.sjoin(structures, geology, how="left", op="within")
+    #structures_code = gpd.sjoin(structures, geology, how="left", op="within")
 
     first_supergroup=True
     for groups in super_groups:
