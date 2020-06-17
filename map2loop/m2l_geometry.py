@@ -1811,14 +1811,14 @@ def normalise_thickness(output_path):
     f=open(output_path+'formation_thicknesses_norm.csv','w')
     f.write('x,y,formation,app_th,thickness,norm_th\n')
     fs=open(output_path+'formation_summary_thicknesses.csv','w')
-    fs.write('formation,thickness median,thickness std\n')
+    fs.write('formation,thickness median,thickness std,method\n')
     for code in codes:
         is_code=thickness.formation.str.contains(code, regex=False)
         all_thick = thickness[is_code]
         all_thick2=all_thick[all_thick["thickness"]!=0]
         print(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std())
-        ostr="{},{},{}\n"\
-              .format(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std())
+        ostr="{},{},{},{}\n"\
+              .format(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std(),'full')
         #ostr=str(code)+","+str(all_thick2.loc[:,"thickness"].median())+","+str(all_thick2.loc[:,"thickness"].std())+"\n"    
         fs.write(ostr)
         med=all_thick2.loc[:,"thickness"].median()
@@ -1833,7 +1833,7 @@ def normalise_thickness(output_path):
                 #ostr=str(thick[i,0])+","+str(thick[i,1])+","+str(thick[i,2])+","+str(thick[i,3])+","+str(thick[i,3]/med)+"\n"    
                 f.write(ostr)
     f.close()
-    fs.close() 
+    #fs.close() 
     
     thickness=pd.read_csv(output_path+'min_formation_thicknesses.csv', sep=',')
     
@@ -1841,15 +1841,15 @@ def normalise_thickness(output_path):
 
     f=open(output_path+'min_formation_thicknesses_norm.csv','w')
     f.write('x,y,formation,app_th,thickness,norm_th\n')
-    fs=open(output_path+'min_formation_summary_thicknesses.csv','w')
-    fs.write('formation,thickness median,thickness std\n')
+    #fs=open(output_path+'min_formation_summary_thicknesses.csv','w')
+    #fs.write('formation,thickness median,thickness std\n')
     for code in codes:
         is_code=thickness.formation.str.contains(code, regex=False)
         all_thick = thickness[is_code]
         all_thick2=all_thick[all_thick["thickness"]!=0]
         print(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std())
-        ostr="{},{},{}\n"\
-              .format(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std())
+        ostr="{},{},{},{}\n"\
+              .format(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std(),'min')
         #ostr=str(code)+","+str(all_thick2.loc[:,"thickness"].median())+","+str(all_thick2.loc[:,"thickness"].std())+"\n"    
         fs.write(ostr)
         med=all_thick2.loc[:,"thickness"].median()

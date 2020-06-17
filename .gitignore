@@ -146,7 +146,7 @@ test_data3/test_data3*
 scratch/*
 QLD/*
 qld_src_data/*
-*.zip
+
 
 map2loop/.vscode/launch.json
 map2loop/.vscode/settings.json
