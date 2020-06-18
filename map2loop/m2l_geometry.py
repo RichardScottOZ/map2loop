@@ -644,7 +644,7 @@ def save_faults(path_faults,output_path,dtm,dtb,dtb_null,cover_map,c_l,fault_dec
                     
                     if(c_l['fdipdir_flag']=='num'): # numeric dip direction defined
                         azimuth=flt[c_l['fdipdir']]
-                    elif(not str(flt[c_l['fdipdir']])=='None' and not flt[c_l['fdipdir']]== "-999" ): # alpha dip direction defined
+                    elif(not str(flt[c_l['fdipdir']])=='None' and not flt[c_l['fdip']]== c_l['fdipnull'] ): # alpha dip direction defined
                         dotprod=degrees(acos((-lsx*dip_dirs[flt[c_l['fdipdir']]][0])+(lsy*dip_dirs[flt[c_l['fdipdir']]][1])))
                         if(dotprod>45):
                             fault_dip=-fault_dip

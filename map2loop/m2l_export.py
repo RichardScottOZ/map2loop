@@ -4,7 +4,14 @@ import random
 import numpy as np
 import pandas as pd
 import os
-
+import geopandas as gpd
+import rasterio
+from rasterio import plot
+from rasterio.plot import show
+from rasterio.mask import mask
+from rasterio.transform import from_origin
+from rasterio.io import MemoryFile
+import matplotlib
 
 ##########################################################################
 # Save out and compile taskfile needed to generate geomodeller model using the geomodellerbatch engine
@@ -1180,3 +1187,111 @@ def loop2gempy_(test_data_name, tmp_path, vtk_path, orientations_file, contacts_
         gp.plot.export_to_vtk(geo_model, path=vtk_path, name=test_data_name+'.vtk', voxels=False, block=None, surfaces=True)
 
     return geo_model
+
+#     Courtesy of https://gist.github.com/delestro/54d5a34676a8cef7477e
+
+def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=False, verbose=True):
+    """
+    Creates a random colormap to be used together with matplotlib. Useful for segmentation tasks
+    :param nlabels: Number of labels (size of colormap)
+    :param type: 'bright' for strong colors, 'soft' for pastel colors
+    :param first_color_black: Option to use first color as black, True or False
+    :param last_color_black: Option to use last color as black, True or False
+    :param verbose: Prints the number of labels and shows the colormap. True or False
+    :return: colormap for matplotlib
+    
+    """
+    from matplotlib.colors import LinearSegmentedColormap
+    import colorsys
+    import numpy as np
+
+
+    if type not in ('bright', 'soft'):
+        print ('Please choose "bright" or "soft" for type')
+        return
+
+    if verbose:
+        print('Number of labels: ' + str(nlabels))
+
+    # Generate color map for bright colors, based on hsv
+    if type == 'bright':
+        randHSVcolors = [(np.random.uniform(low=0.0, high=1),
+                          np.random.uniform(low=0.2, high=1),
+                          np.random.uniform(low=0.9, high=1)) for i in range(nlabels)]
+
+        # Convert HSV list to RGB
+        randRGBcolors = []
+        for HSVcolor in randHSVcolors:
+            randRGBcolors.append(colorsys.hsv_to_rgb(HSVcolor[0], HSVcolor[1], HSVcolor[2]))
+
+        if first_color_black:
+            randRGBcolors[0] = [0, 0, 0]
+
+        if last_color_black:
+            randRGBcolors[-1] = [0, 0, 0]
+
+        random_colormap = LinearSegmentedColormap.from_list('new_map', randRGBcolors, N=nlabels)
+
+    # Generate soft pastel colors, by limiting the RGB spectrum
+    if type == 'soft':
+        low = 0.6
+        high = 0.95
+        randRGBcolors = [(np.random.uniform(low=low, high=high),
+                          np.random.uniform(low=low, high=high),
+                          np.random.uniform(low=low, high=high)) for i in range(nlabels)]
+
+        if first_color_black:
+            randRGBcolors[0] = [0, 0, 0]
+
+        if last_color_black:
+            randRGBcolors[-1] = [0, 0, 0]
+        random_colormap = LinearSegmentedColormap.from_list('new_map', randRGBcolors, N=nlabels)
+
+    # Display colorbar
+    if verbose:
+        from matplotlib import colors, colorbar
+        from matplotlib import pyplot as plt
+        fig, ax = plt.subplots(1, 1, figsize=(15, 0.5))
+
+        bounds = np.linspace(0, nlabels, nlabels + 1)
+        norm = colors.BoundaryNorm(bounds, nlabels)
+
+        cb = colorbar.ColorbarBase(ax, cmap=random_colormap, norm=norm, spacing='proportional', ticks=None,
+                                   boundaries=bounds, format='%1i', orientation=u'horizontal')
+
+    return random_colormap
+    
+def display_LS_map(model,dtm,geol_clip,faults_clip,dst_crs,use_topo):
+    
+    new_cmap = rand_cmap(100, type='soft', first_color_black=False, last_color_black=False, verbose=False)
+
+    dtm_val = dtm.read(1)
+
+    grid=np.array((dtm_val.shape[0]*dtm_val.shape[1],3))
+    scale=(dtm.bounds[2]-dtm.bounds[0])/dtm_val.shape[1]
+    x=np.linspace(dtm.bounds[0],dtm.bounds[2],dtm_val.shape[1])
+    y=np.linspace(dtm.bounds[3],dtm.bounds[1],dtm_val.shape[0])
+    xx, yy = np.meshgrid(x,y,indexing='ij')
+
+    if(use_topo):
+        zz = dtm_val.flatten()
+    else:
+        zz = np.zeros_like(xx)
+
+    points = np.array([xx.flatten(order='F'),yy.flatten(order='F'),zz.flatten(order='F')]).T
+    v = model.evaluate_model(model.scale(points))
+    transform = from_origin(dtm.bounds[0], dtm.bounds[3],scale,scale)
+
+    
+    memfile = MemoryFile()
+    new_dataset = memfile.open( driver='GTiff',
+                            height = dtm.shape[0], width = dtm.shape[1],
+                            count=1, dtype='float64',
+                            crs=dst_crs,
+                            transform=transform)
+    new_dataset.write(v.astype('float64').reshape(dtm_val.shape[0],dtm_val.shape[1]), 1)
+    
+    fig, ax = matplotlib.pyplot.subplots(figsize=(15, 15))
+    rasterio.plot.show(new_dataset.read(1),transform=new_dataset.transform, cmap=new_cmap, ax=ax)
+    geol_clip.plot(ax=ax, facecolor='none', edgecolor='black',linewidth=0.4)
+    faults_clip.plot(ax=ax, facecolor='none', edgecolor='red',linewidth=0.7)
