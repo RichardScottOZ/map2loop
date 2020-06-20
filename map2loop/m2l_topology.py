@@ -614,6 +614,7 @@ def save_Parfile(m2m_cpp_path,c_l,graph_path,geology_file_csv,fault_file_csv,str
     f.write('Intersect Contact With Fault: distance epsilon (m)  =15.0\n')
     f.write('Distance buffer (fault stops on another fault) (m)  =20.0\n')
     f.write('Distance buffer (point on contact) (m)              ='+str(deposit_dist)+'\n')
+    f.write('Intersect polygons distance buffer (for bad maps)   =3.\n')
     f.write('------------------------------------------------------------------------------------------------\n')
     f.write('Path to the output data folder                      ='+graph_path+'\n')
     f.write('Path to geology data file                           ='+geology_file_csv+'\n')

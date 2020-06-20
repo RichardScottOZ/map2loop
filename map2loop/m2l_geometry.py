@@ -1615,7 +1615,7 @@ def calc_thickness_with_grid(tmp_path,output_path,buffer,max_thickness_allowed,c
     ctextcode=contacts['formation'].to_numpy()
 
     fth=open(output_path+'formation_thicknesses.csv','w')
-    fth.write('X,Y,formation,appar_th,thickness,cl,cm,p1x,p1y,p2x,p2y,dip\n')
+    fth.write('X,Y,formation,appar_th,thickness,cl,cm,p1x,p1y,p2x,p2y,dip,type\n')
     
     #np.savetxt(tmp_path+'dist.csv',dist,delimiter=',')
     #display("ppp",cx.shape,cy.shape,ox.shape,oy.shape,dip.shape,azimuth.shape,dist.shape)
@@ -1682,8 +1682,8 @@ def calc_thickness_with_grid(tmp_path,output_path,buffer,max_thickness_allowed,c
                                         min_pt=f
                                 if(min_dist<max_thickness_allowed): #if not too far, add to output
                                     true_thick=sin(radians(dip_mean))*min_dist
-                                    ostr="{},{},{},{},{},{},{},{},{},{},{},{}\n"\
-                                          .format(cx[k],cy[k],ctextcode[k],min_dist,int(true_thick),cl[k],cm[k],p1.x,p1.y,p2.x,p2.y,dip_mean)
+                                    ostr="{},{},{},{},{},{},{},{},{},{},{},{},{}\n"\
+                                          .format(cx[k],cy[k],ctextcode[k],min_dist,int(true_thick),cl[k],cm[k],p1.x,p1.y,p2.x,p2.y,dip_mean,'full')
                                     #ostr=str(cx[k])+','+str(cy[k])+','+ctextcode[k]+','+str(int(true_thick))+\
                                     #    ','+str(cl[k])+','+str(cm[k])+','+str(lm)+','+str(mm)+','+str(nm)+','+\
                                     #    str(p1.x)+','+str(p1.y)+','+str(p2.x)+','+str(p2.y)+','+str(dip_mean)+'\n'
@@ -1710,8 +1710,8 @@ def calc_min_thickness_with_grid(tmp_path,output_path,buffer,max_thickness_allow
     cm=contacts['lsy'].to_numpy(dtype=float)
     ctextcode=contacts['formation'].to_numpy()
 
-    fth=open(output_path+'min_formation_thicknesses.csv','w')
-    fth.write('X,Y,formation,appar_th,thickness,cl,cm,p1x,p1y,p2x,p2y,dip\n')
+    fth=open(output_path+'formation_thicknesses.csv','a+')
+    #fth.write('X,Y,formation,appar_th,thickness,cl,cm,p1x,p1y,p2x,p2y,dip\n')
     
     #np.savetxt(tmp_path+'dist.csv',dist,delimiter=',')
     #display("ppp",cx.shape,cy.shape,ox.shape,oy.shape,dip.shape,azimuth.shape,dist.shape)
@@ -1782,8 +1782,8 @@ def calc_min_thickness_with_grid(tmp_path,output_path,buffer,max_thickness_allow
                                             min_pt=f
                                     if(min_dist<max_thickness_allowed and min_dist>1): #if not too far, add to output
                                         true_thick=sin(radians(dip_mean))*min_dist
-                                        ostr="{},{},{},{},{},{},{},{},{},{},{},{}\n"\
-                                              .format(cx[k],cy[k],ctextcode[k],min_dist,int(true_thick),cl[k],cm[k],p1.x,p1.y,p2.x,p2.y,dip_mean)
+                                        ostr="{},{},{},{},{},{},{},{},{},{},{},{},{}\n"\
+                                              .format(cx[k],cy[k],ctextcode[k],min_dist,int(true_thick),cl[k],cm[k],p1.x,p1.y,p2.x,p2.y,dip_mean,'min')
                                         #ostr=str(cx[k])+','+str(cy[k])+','+ctextcode[k]+','+str(int(true_thick))+\
                                         #    ','+str(cl[k])+','+str(cm[k])+','+str(lm)+','+str(mm)+','+str(nm)+','+\
                                         #    str(p1.x)+','+str(p1.y)+','+str(p2.x)+','+str(p2.y)+','+str(dip_mean)+'\n'
@@ -1791,7 +1791,7 @@ def calc_min_thickness_with_grid(tmp_path,output_path,buffer,max_thickness_allow
                                         n_est=n_est+1
                             
             g=g+1
-    print(n_est,'thickness estimates saved as',output_path+'min_formation_thicknesses.csv')
+    print(n_est,'min thickness estimates appended to',output_path+'formation_thicknesses.csv')
     
     
 ####################################
@@ -1818,7 +1818,7 @@ def normalise_thickness(output_path):
         all_thick2=all_thick[all_thick["thickness"]!=0]
         print(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std())
         ostr="{},{},{},{}\n"\
-              .format(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std(),'full')
+              .format(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std(),all_thick2.iloc[0]['type'])
         #ostr=str(code)+","+str(all_thick2.loc[:,"thickness"].median())+","+str(all_thick2.loc[:,"thickness"].std())+"\n"    
         fs.write(ostr)
         med=all_thick2.loc[:,"thickness"].median()
@@ -1833,38 +1833,9 @@ def normalise_thickness(output_path):
                 #ostr=str(thick[i,0])+","+str(thick[i,1])+","+str(thick[i,2])+","+str(thick[i,3])+","+str(thick[i,3]/med)+"\n"    
                 f.write(ostr)
     f.close()
-    #fs.close() 
+    fs.close() 
     
-    thickness=pd.read_csv(output_path+'min_formation_thicknesses.csv', sep=',')
-    
-    codes=thickness.formation.unique()
 
-    f=open(output_path+'min_formation_thicknesses_norm.csv','w')
-    f.write('x,y,formation,app_th,thickness,norm_th\n')
-    #fs=open(output_path+'min_formation_summary_thicknesses.csv','w')
-    #fs.write('formation,thickness median,thickness std\n')
-    for code in codes:
-        is_code=thickness.formation.str.contains(code, regex=False)
-        all_thick = thickness[is_code]
-        all_thick2=all_thick[all_thick["thickness"]!=0]
-        print(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std())
-        ostr="{},{},{},{}\n"\
-              .format(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std(),'min')
-        #ostr=str(code)+","+str(all_thick2.loc[:,"thickness"].median())+","+str(all_thick2.loc[:,"thickness"].std())+"\n"    
-        fs.write(ostr)
-        med=all_thick2.loc[:,"thickness"].median()
-        std=all_thick2.loc[:,"thickness"].std()
-        
-        thick=all_thick2.to_numpy()
-    
-        for i in range(len(thick)):
-            if(med>0):
-                ostr="{},{},{},{},{},{}\n"\
-                      .format(thick[i,0],thick[i,1],thick[i,2],thick[i,3],thick[i,4],thick[i,4]/med)
-                #ostr=str(thick[i,0])+","+str(thick[i,1])+","+str(thick[i,2])+","+str(thick[i,3])+","+str(thick[i,3]/med)+"\n"    
-                f.write(ostr)
-    f.close()
-    fs.close()
     
 ####################################################
 # Save out near-fold axial trace orientations:
