@@ -13,7 +13,7 @@ model_base=-3200
 
 #PATHS
 
-local_paths=True       #flag to use local or WFS source for data inputs (True = local)
+local_paths=False       #flag to use local or WFS source for data inputs (True = local)
 
 
 data_path=''
