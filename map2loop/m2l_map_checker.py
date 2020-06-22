@@ -70,7 +70,10 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,tmp_path,bbox,c
         show_metadata(orientations,"orientations layer")    
             
     if (os.path.isfile(geology_file) or not local_paths):
-        geology = gpd.read_file(geology_file,bbox=bbox)    
+        geology = gpd.read_file(geology_file,bbox=bbox)
+        if not c_l['o'] in geology.columns:
+            geology = geology.reset_index()
+            geology[c_l['o']]=geology.index
         unique_g=set(geology[c_l['o']])
 
         if(not len(unique_g) == len(geology)):

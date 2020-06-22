@@ -1816,22 +1816,23 @@ def normalise_thickness(output_path):
         is_code=thickness.formation.str.contains(code, regex=False)
         all_thick = thickness[is_code]
         all_thick2=all_thick[all_thick["thickness"]!=0]
-        print(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std())
-        ostr="{},{},{},{}\n"\
-              .format(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std(),all_thick2.iloc[0]['type'])
-        #ostr=str(code)+","+str(all_thick2.loc[:,"thickness"].median())+","+str(all_thick2.loc[:,"thickness"].std())+"\n"    
-        fs.write(ostr)
-        med=all_thick2.loc[:,"thickness"].median()
-        std=all_thick2.loc[:,"thickness"].std()
+        if((len(all_thick2)>0)):
+            print(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std())
+            ostr="{},{},{},{}\n"\
+               .format(code,all_thick2.loc[:,"thickness"].median(),all_thick2.loc[:,"thickness"].std(),all_thick2.iloc[0]['type'])
+            #ostr=str(code)+","+str(all_thick2.loc[:,"thickness"].median())+","+str(all_thick2.loc[:,"thickness"].std())+"\n"    
+            fs.write(ostr)
+            med=all_thick2.loc[:,"thickness"].median()
+            std=all_thick2.loc[:,"thickness"].std()
         
-        thick=all_thick2.to_numpy()
+            thick=all_thick2.to_numpy()
     
-        for i in range(len(thick)):
-            if(med>0):
-                ostr="{},{},{},{},{},{}\n"\
-                      .format(thick[i,0],thick[i,1],thick[i,2],thick[i,3],thick[i,4],thick[i,4]/med)
-                #ostr=str(thick[i,0])+","+str(thick[i,1])+","+str(thick[i,2])+","+str(thick[i,3])+","+str(thick[i,3]/med)+"\n"    
-                f.write(ostr)
+            for i in range(len(thick)):
+                if(med>0):
+                    ostr="{},{},{},{},{},{}\n"\
+                          .format(thick[i,0],thick[i,1],thick[i,2],thick[i,3],thick[i,4],thick[i,4]/med)
+                    #ostr=str(thick[i,0])+","+str(thick[i,1])+","+str(thick[i,2])+","+str(thick[i,3])+","+str(thick[i,3]/med)+"\n"    
+                    f.write(ostr)
     f.close()
     fs.close() 
     
