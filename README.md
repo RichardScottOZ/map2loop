@@ -14,7 +14,7 @@ A recent workshop as part of the Loop/MinEx CRC collaborations provides a tutori
    
 #### What it does:
   
--  Combines information extracted from vector geology maps in various forms to supoprt 3D geological modelling. Outputs are simple csv files that should be readable by any 3D modelling system (I think).
+-  Combines information extracted from vector geology maps in various forms to support 3D geological modelling. Outputs are simple csv files that should be readable by any 3D modelling system (I think), but specific examples are provided for <a href="https://github.com/Loop3D/LoopStructural">LoopStructural</a>, <a href="https://github.com/cgre-aachen/gempy">gempy</a>, <a href="https://www.intrepid-geophysics.com/product/geomodeller/">geomodeller</a> and <a href="https://github.com/cgre-aachen/pynoddy">noddy</a>.
 
 #### Inputs: (example data supplied) 
    
