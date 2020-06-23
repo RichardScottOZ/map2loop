@@ -12,6 +12,7 @@ from rasterio.mask import mask
 from rasterio.transform import from_origin
 from rasterio.io import MemoryFile
 import matplotlib
+from map2loop import m2l_utils
 
 ##########################################################################
 # Save out and compile taskfile needed to generate geomodeller model using the geomodellerbatch engine
@@ -94,6 +95,7 @@ def loop2geomodeller(model_name,test_data_path,tmp_path,output_path,dtm_file,bbo
             empty_fm.append(afm['code'])
 
     #print(empty_fm)
+    asc=pd.read_csv(tmp_path+'all_sorts_clean.csv',",")
 
     all_sorts=np.genfromtxt(tmp_path+'all_sorts_clean.csv',delimiter=',',dtype='U100')
     nformations=len(all_sorts)
@@ -109,14 +111,14 @@ def loop2geomodeller(model_name,test_data_path,tmp_path,output_path,dtm_file,bbo
 
             ostr='    name: "'+all_sorts[i,4].replace("\n","")+'"\n'
             f.write(ostr)
-
-            ostr='    red: '+str(random.randint(1,256)-1)+'\n'
+            r,g,b=m2l_utils.hextoints(asc.iloc[i]['colour'])
+            ostr='    red: '+str(int(r))+'\n'
+            f.write(ostr)
+    
+            ostr='    green: '+str(int(g))+'\n'
             f.write(ostr)
 
-            ostr='    green: '+str(random.randint(1,256)-1)+'\n'
-            f.write(ostr)
-
-            ostr='    blue: '+str(random.randint(1,256)-1)+'\n'
+            ostr='    blue: '+str(int(b))+'\n'
             f.write(ostr)
 
             f.write('    }\n')

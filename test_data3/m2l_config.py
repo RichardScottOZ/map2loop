@@ -18,6 +18,7 @@ import os
 last=os.path.split(os.getcwd())[1]
 
 test_data_path='../'+last+'/'
+clut_path='../source_data/500kibg_colours.csv'
 
 data_path='../source_data/'
 

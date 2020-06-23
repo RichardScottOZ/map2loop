@@ -836,3 +836,19 @@ def plot_bedding_stereonets_old(orientations,all_sorts):
 
         if(ind>0 and not ind2==2):
             plt.show()
+            
+def hextofloats(h):
+    '''Takes a hex rgb string (e.g. #ffffff) and returns an RGB tuple (float, float, float).'''
+    return tuple(int(h[i:i + 2], 16) / 255. for i in (1, 3, 5)) # skip '#'
+
+def floatstohex(rgb):
+    '''Takes an RGB tuple or list and returns a hex RGB string.'''
+    return f'#{int(rgb[0]*255):02x}{int(rgb[1]*255):02x}{int(rgb[2]*255):02x}'
+    
+def hextoints(h):
+    '''Takes a hex rgb string (e.g. #ffffff) and returns an RGB tuple (float, float, float).'''
+    return tuple(int(h[i:i + 2], 16)  for i in (1, 3, 5))
+
+def intstohex(rgb):
+    '''Takes an RGB tuple or list and returns a hex RGB string.'''
+    return f'#{int(rgb[0]):02x}{int(rgb[1]):02x}{int(rgb[2]):02x}'

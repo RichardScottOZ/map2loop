@@ -1229,7 +1229,7 @@ def process_plutons(tmp_path,output_path,geol_clip,local_paths,dtm,dtb,dtb_null,
 # without formations, contacts without formations etc so gempy and other packages don’t have a fit.
 ###################################
 
-def tidy_data(output_path,tmp_path,use_group,use_interpolations,use_fat,pluton_form,inputs,workflow):
+def tidy_data(output_path,tmp_path,clut_path,use_group,use_interpolations,use_fat,pluton_form,inputs,workflow):
 
     contacts=pd.read_csv(output_path+'contacts4.csv',",")
     all_orientations=pd.read_csv(output_path+'orientations.csv',",")
@@ -1428,6 +1428,27 @@ def tidy_data(output_path,tmp_path,use_group,use_interpolations,use_fat,pluton_f
                     newdx=newdx+1
             gpdx=gpdx+1
     fas.close()
+    
+    #add colours (hardwired to GSWA or the moment
+    if(clut_path ==''):
+       asc=pd.read_csv(tmp_path+'all_sorts_clean.csv',",")
+       colours={}
+       for i in range(len(asc2)):
+           r=random.randint(1,256)-1
+           g=random.randint(1,256)-1
+           b=random.randint(1,256)-1
+           hex_rgb=m2l_utils.intstohex((r,g,b))
+           colours.append(hex_rgb)
+       asc['colour'] = colours
+       asc.to_csv(tmp_path+'all_sorts_clean.csv', index = None, header=True)
+    else:
+       asc=pd.read_csv(tmp_path+'all_sorts_clean.csv',",")
+       colours=pd.read_csv('../source_data/500kibg_colours.csv',",")
+
+       asc2=pd.merge(asc, colours, how='inner',  left_on='code', right_on='code')
+       asc2.drop(['UNITNAME'], axis=1,inplace=True)
+       asc2.to_csv(tmp_path+'all_sorts_clean.csv', index = None, header=True)
+
 
 """
     fac=open(output_path+'contacts_clean.csv',"w")

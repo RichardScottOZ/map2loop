@@ -17,7 +17,7 @@ local_paths=False       #flag to use local or WFS source for data inputs (True =
 
 
 data_path=''
-
+clut_path='../source_data/500kibg_colours.csv'
 #geology_file='hams2_geol.shp'   #input geology file (if local)
 #fault_file='GEOS_GEOLOGY_LINEARSTRUCTURE_500K_GSD.shp' #input fault file (if local)
 #structure_file='hams2_structure.shp' #input bedding orientation file (if local)
