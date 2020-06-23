@@ -1229,7 +1229,7 @@ def process_plutons(tmp_path,output_path,geol_clip,local_paths,dtm,dtb,dtb_null,
 # without formations, contacts without formations etc so gempy and other packages don’t have a fit.
 ###################################
 
-def tidy_data(output_path,tmp_path,clut_path,use_group,use_interpolations,use_fat,pluton_form,inputs,workflow):
+def tidy_data(output_path,tmp_path,clut_path,use_group,use_interpolations,use_fat,pluton_form,inputs,workflow,c_l):
 
     contacts=pd.read_csv(output_path+'contacts4.csv',",")
     all_orientations=pd.read_csv(output_path+'orientations.csv',",")
@@ -1442,13 +1442,21 @@ def tidy_data(output_path,tmp_path,clut_path,use_group,use_interpolations,use_fa
        asc['colour'] = colours
        asc.to_csv(tmp_path+'all_sorts_clean.csv', index = None, header=True)
     else:
-       asc=pd.read_csv(tmp_path+'all_sorts_clean.csv',",")
-       colours=pd.read_csv('../source_data/500kibg_colours.csv',",")
-
-       asc2=pd.merge(asc, colours, how='inner',  left_on='code', right_on='code')
-       asc2.drop(['UNITNAME'], axis=1,inplace=True)
-       asc2.to_csv(tmp_path+'all_sorts_clean.csv', index = None, header=True)
-
+        asc=pd.read_csv(tmp_path+'all_sorts_clean.csv',",")
+        colours=pd.read_csv(clut_path,",")
+        if( c_l['c']=='CODE'):
+            code=c_l['c'].lower()
+        else:
+            code=c_l['c']
+            
+        asc2=pd.merge(asc, colours, how='inner',  left_on='code', right_on=code)
+        asc2.drop(['UNITNAME'], axis=1,inplace=True)
+        if(not c_l['c']=='code'):
+            asc2.rename(columns = {'code_x':'code'}, inplace = True)
+            if('code_y' in asc2.columns):
+                asc2.drop(['code_y'], axis=1,inplace=True)
+        asc2.drop_duplicates()
+        asc2.to_csv(tmp_path+'all_sorts_clean.csv', index = None, header=True)
 
 """
     fac=open(output_path+'contacts_clean.csv',"w")
@@ -2307,75 +2315,76 @@ def fault_strat_offset(path_out,c_l,dst_crs,fm_thick_file, all_sorts_file,fault_
     
 
     all_long_faults=np.genfromtxt(fault_dim_file,delimiter=',',dtype='U100')
-    fault_names=all_long_faults[1:,:1]
 
     f=open(path_out+'fault_strat_offset3.csv','w')
     f.write('X,Y,id,left_fm,right_fm,min_offset,strat_offset\n')
+    if(len(all_long_faults)>0):
+        fault_names=all_long_faults[1:,:1]
     
-    for index,fault in faults.iterrows():
-        if('Fault_'+str(fault[c_l['o']]) in fault_names):
-            lcoords=[]
-            rcoords=[]
-            index=[]
-            for i in range (0,len(fault.geometry.coords)-1):
-                midx=fault.geometry.coords[i][0]+((fault.geometry.coords[i+1][0]-fault.geometry.coords[i][0])/2.0)            
-                midy=fault.geometry.coords[i][1]+((fault.geometry.coords[i+1][1]-fault.geometry.coords[i][1])/2.0)
-                l,m=m2l_utils.pts2dircos(fault.geometry.coords[i][0],fault.geometry.coords[i][1],fault.geometry.coords[i+1][0],fault.geometry.coords[i+1][1])
-                lcoords.append([(midx+(10*m),midy-(10*l))])
-                rcoords.append([(midx-(10*m),midy+(10*l))])
-                index.append([(i)])
-            lgeom=[Point(xy) for xy in lcoords]        
-            rgeom=[Point(xy) for xy in rcoords]
-            lgdf = GeoDataFrame(index, crs=dst_crs, geometry=lgeom)
-            rgdf = GeoDataFrame(index, crs=dst_crs, geometry=rgeom)
-            lcode = gpd.sjoin(lgdf, geology, how="left", op="within")        
-            rcode = gpd.sjoin(rgdf, geology, how="left", op="within")
-           
-            for i in range (0,len(fault.geometry.coords)-1):
-                if(not str(lcode.iloc[i][c_l['c']])=='nan' and not str(rcode.iloc[i][c_l['c']])=='nan'):
-                    lcode_fm=lcode.iloc[i][c_l['c']].replace(" ","_").replace("-","_").replace("\n","")
-                    rcode_fm=rcode.iloc[i][c_l['c']].replace(" ","_").replace("-","_").replace("\n","")
-
-                    if(lcode_fm in codes and rcode_fm in codes and lcode_fm in formations and rcode_fm in formations ):            
-                        midx=lcode.iloc[i].geometry.x+((rcode.iloc[i].geometry.x-lcode.iloc[i].geometry.x)/2)
-                        midy=lcode.iloc[i].geometry.y+((rcode.iloc[i].geometry.y-lcode.iloc[i].geometry.y)/2)
-
-                        fm_l= int(new_als.loc[lcode_fm]["index"])
-                        fm_r= int(new_als.loc[rcode_fm]["index"])
-
-                        if(fm_l>fm_r):
-                            t=fm_l
-                            fm_l=fm_r
-                            fm_r=t
-                        diff=fm_r-fm_l
-                        number_string = str(diff)
-                        diff = number_string.zfill(3)
-                        ostr="{},{},Fault_{},{},{},{},{}\n"\
-                              .format(midx,midy,fault[c_l['o']],lcode_fm,rcode_fm,fm_thick_arr[fm_l,fm_r],diff)
-                        #ostr=str(midx)+','+str(midy)+','+str('Fault_'+str(fault[c_l['o']]))+','+str(lcode_fm)+','+str(rcode_fm)+','+str(fm_thick_arr[fm_l,fm_r])+","+str(diff)+'\n'
-                    elif(lcode_fm in codes and rcode_fm in codes):
-                        midx=lcode.iloc[i].geometry.x+((rcode.iloc[i].geometry.x-lcode.iloc[i].geometry.x)/2)
-                        midy=lcode.iloc[i].geometry.y+((rcode.iloc[i].geometry.y-lcode.iloc[i].geometry.y)/2)
-
-                        fm_l= int(new_als.loc[lcode_fm]["index"])
-                        fm_r= int(new_als.loc[rcode_fm]["index"])
-
-                        if(fm_l>fm_r):
-                            t=fm_l
-                            fm_l=fm_r
-                            fm_r=t
-                        diff=fm_r-fm_l
-                        number_string = str(diff)
-                        diff = number_string.zfill(3)
-                        ostr="{},{},Fault_{},{},{},{},{}\n"\
-                              .format(midx,midy,fault[c_l['o']],lcode_fm,rcode_fm,'-1',diff)
-                        #ostr=str(midx)+','+str(midy)+','+str('Fault_'+str(fault[c_l['o']]))+','+str(lcode_fm)+','+str(rcode_fm)+','+str('-1')+","+str(diff)+'\n'
-                    else:
-                        ostr="{},{},Fault_{},{},{},{},{}\n"\
-                              .format(midx,midy,fault[c_l['o']],'','','-1','-1')
-                        #ostr=str(midx)+','+str(midy)+','+str('Fault_'+str(fault[c_l['o']]))+','+str('')+','+str('')+','+str('-1')+','+str('-1')+'\n'
-                    
-                f.write(ostr)  
+        for index,fault in faults.iterrows():
+            if('Fault_'+str(fault[c_l['o']]) in fault_names):
+                lcoords=[]
+                rcoords=[]
+                index=[]
+                for i in range (0,len(fault.geometry.coords)-1):
+                    midx=fault.geometry.coords[i][0]+((fault.geometry.coords[i+1][0]-fault.geometry.coords[i][0])/2.0)            
+                    midy=fault.geometry.coords[i][1]+((fault.geometry.coords[i+1][1]-fault.geometry.coords[i][1])/2.0)
+                    l,m=m2l_utils.pts2dircos(fault.geometry.coords[i][0],fault.geometry.coords[i][1],fault.geometry.coords[i+1][0],fault.geometry.coords[i+1][1])
+                    lcoords.append([(midx+(10*m),midy-(10*l))])
+                    rcoords.append([(midx-(10*m),midy+(10*l))])
+                    index.append([(i)])
+                lgeom=[Point(xy) for xy in lcoords]        
+                rgeom=[Point(xy) for xy in rcoords]
+                lgdf = GeoDataFrame(index, crs=dst_crs, geometry=lgeom)
+                rgdf = GeoDataFrame(index, crs=dst_crs, geometry=rgeom)
+                lcode = gpd.sjoin(lgdf, geology, how="left", op="within")        
+                rcode = gpd.sjoin(rgdf, geology, how="left", op="within")
+               
+                for i in range (0,len(fault.geometry.coords)-1):
+                    if(not str(lcode.iloc[i][c_l['c']])=='nan' and not str(rcode.iloc[i][c_l['c']])=='nan'):
+                        lcode_fm=lcode.iloc[i][c_l['c']].replace(" ","_").replace("-","_").replace("\n","")
+                        rcode_fm=rcode.iloc[i][c_l['c']].replace(" ","_").replace("-","_").replace("\n","")
+        
+                        if(lcode_fm in codes and rcode_fm in codes and lcode_fm in formations and rcode_fm in formations ):            
+                            midx=lcode.iloc[i].geometry.x+((rcode.iloc[i].geometry.x-lcode.iloc[i].geometry.x)/2)
+                            midy=lcode.iloc[i].geometry.y+((rcode.iloc[i].geometry.y-lcode.iloc[i].geometry.y)/2)
+        
+                            fm_l= int(new_als.loc[lcode_fm]["index"])
+                            fm_r= int(new_als.loc[rcode_fm]["index"])
+        
+                            if(fm_l>fm_r):
+                                t=fm_l
+                                fm_l=fm_r
+                                fm_r=t
+                            diff=fm_r-fm_l
+                            number_string = str(diff)
+                            diff = number_string.zfill(3)
+                            ostr="{},{},Fault_{},{},{},{},{}\n"\
+                                  .format(midx,midy,fault[c_l['o']],lcode_fm,rcode_fm,fm_thick_arr[fm_l,fm_r],diff)
+                            #ostr=str(midx)+','+str(midy)+','+str('Fault_'+str(fault[c_l['o']]))+','+str(lcode_fm)+','+str(rcode_fm)+','+str(fm_thick_arr[fm_l,fm_r])+","+str(diff)+'\n'
+                        elif(lcode_fm in codes and rcode_fm in codes):
+                            midx=lcode.iloc[i].geometry.x+((rcode.iloc[i].geometry.x-lcode.iloc[i].geometry.x)/2)
+                            midy=lcode.iloc[i].geometry.y+((rcode.iloc[i].geometry.y-lcode.iloc[i].geometry.y)/2)
+        
+                            fm_l= int(new_als.loc[lcode_fm]["index"])
+                            fm_r= int(new_als.loc[rcode_fm]["index"])
+        
+                            if(fm_l>fm_r):
+                                t=fm_l
+                                fm_l=fm_r
+                                fm_r=t
+                            diff=fm_r-fm_l
+                            number_string = str(diff)
+                            diff = number_string.zfill(3)
+                            ostr="{},{},Fault_{},{},{},{},{}\n"\
+                                  .format(midx,midy,fault[c_l['o']],lcode_fm,rcode_fm,'-1',diff)
+                            #ostr=str(midx)+','+str(midy)+','+str('Fault_'+str(fault[c_l['o']]))+','+str(lcode_fm)+','+str(rcode_fm)+','+str('-1')+","+str(diff)+'\n'
+                        else:
+                            ostr="{},{},Fault_{},{},{},{},{}\n"\
+                                  .format(midx,midy,fault[c_l['o']],'','','-1','-1')
+                            #ostr=str(midx)+','+str(midy)+','+str('Fault_'+str(fault[c_l['o']]))+','+str('')+','+str('')+','+str('-1')+','+str('-1')+'\n'
+                        
+                    f.write(ostr)  
     f.close()
     print('minumim stratigraphic offsets saved as',path_out+'fault_strat_offset3.csv' )
 
