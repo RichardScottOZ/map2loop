@@ -104,14 +104,14 @@ def loop2geomodeller(model_name,test_data_path,tmp_path,output_path,dtm_file,bbo
     f.write('#-----------------------Create Formations-----------------------\n')
     f.write('#---------------------------------------------------------------\n')
        
-    for i in range (1,nformations):
-        if( not all_sorts[i,4] in empty_fm):
+    for ind,row in asc.iterrows():
+        if( not row['code'] in empty_fm):
             f.write('GeomodellerTask {\n')
             f.write('CreateFormation {\n')
-
-            ostr='    name: "'+all_sorts[i,4].replace("\n","")+'"\n'
-            f.write(ostr)
-            r,g,b=m2l_utils.hextoints(asc.iloc[i]['colour'])
+    
+            ostr='    name: "'+row['code'].replace("\n","")+'"\n'  
+            f.write(ostr)            
+            r,g,b=m2l_utils.hextoints(row['colour'])
             ostr='    red: '+str(int(r))+'\n'
             f.write(ostr)
     

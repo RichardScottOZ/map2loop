@@ -1455,7 +1455,9 @@ def tidy_data(output_path,tmp_path,clut_path,use_group,use_interpolations,use_fa
             asc2.rename(columns = {'code_x':'code'}, inplace = True)
             if('code_y' in asc2.columns):
                 asc2.drop(['code_y'], axis=1,inplace=True)
-        asc2.drop_duplicates()
+        for row in range(len(asc2)-1,0,-1):
+            if(asc2.iloc[row]['index']==asc2.iloc[row-1]['index']):
+                asc2.drop(index=row-1,inplace=True)
         asc2.to_csv(tmp_path+'all_sorts_clean.csv', index = None, header=True)
 
 """
