@@ -382,6 +382,7 @@ def save_basal_contacts(path_in,dtm,dtb,dtb_null,cover_map,geol_clip,contact_dec
 #########################################
 def save_basal_no_faults(path_out,path_fault,ls_dict,dist_buffer,c_l,dst_crs):
     faults_clip = gpd.read_file(path_fault)
+    faults_clip=faults_clip[faults_clip[c_l['f']].str.contains(c_l['fault'])]
 
 
     df = DataFrame.from_dict(ls_dict, "index")
@@ -1432,8 +1433,8 @@ def tidy_data(output_path,tmp_path,clut_path,use_group,use_interpolations,use_fa
     #add colours (hardwired to GSWA or the moment
     if(clut_path ==''):
        asc=pd.read_csv(tmp_path+'all_sorts_clean.csv',",")
-       colours={}
-       for i in range(len(asc2)):
+       colours=[]
+       for i in range(len(asc)):
            r=random.randint(1,256)-1
            g=random.randint(1,256)-1
            b=random.randint(1,256)-1

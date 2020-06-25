@@ -121,7 +121,7 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,tmp_path,bbox,c
         unique_f=set(fault_folds[c_l['o']])
 
         if(not len(unique_f) == len(fault_folds)):
-            m2l_errors.append('duplicate fault/fold polyine unique IDs')
+            m2l_errors.append('duplicate fault/fold polyline unique IDs')
 
         fault_folds = fault_folds.replace(r'^\s+$', np.nan, regex=True)        
 
