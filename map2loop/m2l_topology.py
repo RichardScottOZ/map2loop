@@ -752,34 +752,40 @@ def super_groups_and_groups(group_girdle,tmp_path,misorientation):
     l,m,n=m2l_utils.ddd2dircos(group_girdle.iloc[0]['plunge'],group_girdle.iloc[0]['bearing'])
     super_group=pd.DataFrame([[group_girdle[0:1].index[0],'Super_Group_0',l,m,n]],columns=['Group','Super_Group','l','m','n'])
     super_group.set_index('Group',inplace=True)
-
     sg_index=0
     for i in range(1,len(group_girdle)):
-        l,m,n=m2l_utils.ddd2dircos(group_girdle.iloc[i]['plunge'],group_girdle.iloc[i]['bearing'])
-        found=False
-        sg_i=0
-        for ind,sg in super_group.iterrows():
-
-            c = sg['l']*l + sg['m']*m + sg['n']*n
-            if c>1:
-                c=1
-            c=degrees(acos(c))  
-            if(c<misorientation  and not found):
-                found=True
-                sgname='Super_Group_'+str(sg_i)
-                super_group_old=pd.DataFrame([[group_girdle[i:i+1].index[0],sgname,l,m,n]],columns=['Group','Super_Group','l','m','n'])
-                super_group_old.set_index('Group',inplace=True)
-                super_group=super_group.append(super_group_old)
-            sg_i=sg_i+1
-
-        if(not found):
-
-            sg_index=sg_index+1
-            #print('not found',sg_index)
-            sgname='Super_Group_'+str(sg_index)
-            super_group_new=pd.DataFrame([[group_girdle[i:i+1].index[0],sgname,l,m,n]],columns=['Group','Super_Group','l','m','n'])
-            super_group_new.set_index('Group',inplace=True)
-            super_group=super_group.append(super_group_new)
+        if(group_girdle.iloc[i]['num orientations']>3):
+            l,m,n=m2l_utils.ddd2dircos(group_girdle.iloc[i]['plunge'],group_girdle.iloc[i]['bearing'])
+        
+            found=False
+            sg_i=0
+            for ind,sg in super_group.iterrows():
+    
+                c = sg['l']*l + sg['m']*m + sg['n']*n
+                if c>1:
+                    c=1
+                c=degrees(acos(c))  
+                if(c<misorientation  and not found):
+                    found=True
+                    sgname='Super_Group_'+str(sg_i)
+                    super_group_old=pd.DataFrame([[group_girdle[i:i+1].index[0],sgname,l,m,n]],columns=['Group','Super_Group','l','m','n'])
+                    super_group_old.set_index('Group',inplace=True)
+                    super_group=super_group.append(super_group_old)
+                sg_i=sg_i+1
+            if(not found):
+    
+                sg_index=sg_index+1
+                #print('not found',sg_index)
+                sgname='Super_Group_'+str(sg_index)
+                super_group_new=pd.DataFrame([[group_girdle[i:i+1].index[0],sgname,l,m,n]],columns=['Group','Super_Group','l','m','n'])
+                super_group_new.set_index('Group',inplace=True)
+                super_group=super_group.append(super_group_new)
+        else: # not enough orientations to test, so lumped with group with most orientations
+            sgname='Super_Group_'+str(0)
+            super_group_old=pd.DataFrame([[group_girdle[i:i+1].index[0],sgname,l,m,n]],columns=['Group','Super_Group','l','m','n'])
+            super_group_old.set_index('Group',inplace=True)
+            super_group=super_group.append(super_group_old)
+            
 
 
 
@@ -806,4 +812,3 @@ def super_groups_and_groups(group_girdle,tmp_path,misorientation):
         f.write('\n')
     f.close()
     return(super_groups,use_gcode3)
-    

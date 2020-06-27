@@ -688,7 +688,12 @@ def plot_bedding_stereonets(orientations_clean,geology,c_l):
     for gp in groups:
         
         all_orientations=orientations[orientations[c_l['g']]==gp]
-        if(len(all_orientations)>0):
+        if(len(all_orientations)==1):
+            print("----------------------------------------------------------------------------------------------------------------------")
+            print(gp,"observations has 1 observation")
+            group_girdle[gp]=(-999,-999,1)
+            
+        elif(len(all_orientations)>0):
             print("----------------------------------------------------------------------------------------------------------------------")
             print(gp,"observations n=",len(all_orientations))
             fig, ax = mplstereonet.subplots(figsize=(5,5))
