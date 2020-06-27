@@ -12,24 +12,24 @@ Each time you open an anaconda console   you will need to ensure you are in the 
 
 ### 3)  Install a bunch of libraries needed by LoopStructural or map2loop (you can copy/paste all of these at once into the console, once you are in the loop environment). This only has to be done the first time. This may take 15-20 minutes depending on internet/computer speed. You may get prompted to install some of the packages, if so, type y then hit return.
     
-conda install -c conda-forge rasterio   -y
-conda install -c conda-forge geopandas -y
-conda install -c anaconda networkx -y
-conda install -c anaconda git -y
-conda install -c anaconda cython -y
-conda install -c anaconda pytz -y 
-conda install -c anaconda pyamg -y
-conda install -c anaconda python-dateutil -y
-conda install -c conda-forge descartes -y
-conda install -c conda-forge owslib -y
-pip install jupyter 
-conda install -c anaconda ipywidgets    -y
-conda install -c conda-forge ipyleaflet -y
-pip install lavavu 
-conda install -c conda-forge folium -y
-pip install mplsteronet 
-conda install -c anaconda scikit-learn -y
-conda install -c anaconda scikit-image -y
+conda install -c conda-forge rasterio   -y   
+conda install -c conda-forge geopandas -y   
+conda install -c anaconda networkx -y   
+conda install -c anaconda git -y   
+conda install -c anaconda cython -y   
+conda install -c anaconda pytz -y    
+conda install -c anaconda pyamg -y   
+conda install -c anaconda python-dateutil -y   
+conda install -c conda-forge descartes -y   
+conda install -c conda-forge owslib -y   
+pip install jupyter    
+conda install -c anaconda ipywidgets    -y   
+conda install -c conda-forge ipyleaflet -y   
+pip install lavavu    
+conda install -c conda-forge folium -y   
+pip install mplsteronet    
+conda install -c anaconda scikit-learn -y   
+conda install -c anaconda scikit-image -y   
     
 ### 4)  Navigate to where you want to store your files 
    
