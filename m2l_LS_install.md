@@ -10,7 +10,7 @@ conda activate loop
    
 Each time you open an anaconda console   you will need to ensure you are in the loop environment by typing conda activate loop
 
-### 3)  Install a bunch of libraries needed by LoopStructural or map2loop (you can copy/paste all of these at once into the console, once you are in the loop environment). This only has to be done the first time. This may take 15-20 minutes depending on internet/computer speed. You may get prompted to install some of the packages, if so, type y then hit return.
+### 3)  Install a bunch of libraries IN THIS ORDER needed by LoopStructural or map2loop (you can copy/paste all of these at once into the console, once you are in the loop environment). This only has to be done the first time. This may take 15-20 minutes depending on internet/computer speed. You may get prompted to install some of the packages, if so, type y then hit return.
     
 conda install -c conda-forge rasterio   -y   
 conda install -c conda-forge geopandas -y   
