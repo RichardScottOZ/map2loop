@@ -50,7 +50,7 @@ mkdir dirname
    
 <div style="display: inline">git clone http://github.com/Loop3D/map2loop</div> 
    
-##### Use your browser to go to download LoopStructural to the same level as the map2loop directory   
+##### Use the link below to download LoopStructural to the same level as the map2loop directory   
 
 <a href="https://github.com/Loop3D/LoopStructural/releases/download/latest/LoopStructural-1.0.1-cp37-cp37m-win_amd64.whl">LoopStructural wheel</a>    
    
