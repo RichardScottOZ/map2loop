@@ -8,7 +8,7 @@ conda create --name loop python=3.7
    
 conda activate loop   
    
-Each time you open an anaconda console   you will need to ensure you are in the loop environment by typing conda activate loop
+##### Each time you open an anaconda console   you will need to ensure you are in the loop environment by typing conda activate loop
 
 ### 3)  Install a bunch of libraries IN THIS ORDER needed by LoopStructural or map2loop (you can copy/paste all of these at once into the console, once you are in the loop environment). This only has to be done the first time. This may take 15-20 minutes depending on internet/computer speed. You may get prompted to install some of the packages, if so, type y then hit return.
     
@@ -31,41 +31,43 @@ pip install mplsteronet
 conda install -c anaconda scikit-learn -y   
 conda install -c anaconda scikit-image -y   
     
-### 4)  Navigate to where you want to store your files 
+### 4)  Navigate to where you want to store your files: 
    
 cd dirname
    
-to change directory 
+##### to change to directory dirname
    
 cd .. 
    
-to go up one directory 
-   
-Create a new directory somewhere using
+##### to go up one directory 
    
 mkdir dirname
+
+#####  to create a new directory somewhere using
    
-Now, download and install map2loop
+   
+##### Now, download and install map2loop
    
 git clone http://github.com/Loop3D/map2loop
    
-Use your browser to go to download LoopStructural to the same level as the map2loop directory
-https://github.com/Loop3D/LoopStructural/releases/download/latest/LoopStructural-1.0.1-cp37-cp37m-win_amd64.whl 
+##### Use your browser to go to download LoopStructural to the same level as the map2loop directory   
+
+<a href="https://github.com/Loop3D/LoopStructural/releases/download/latest/LoopStructural-1.0.1-cp37-cp37m-win_amd64.whl">LoopStructural wheel</a>    
    
-In the console type
+##### In the console type
    
-pip install LoopStructural-1.0.1-cp37-cp37m-win_amd64.whl
-cd map2loop
-python setup.py install --user
+pip install LoopStructural-1.0.1-cp37-cp37m-win_amd64.whl   
+cd map2loop   
+python setup.py install --user   
     
 ### 5) Finally start up the jupyter server:
    
-cd ..
-jupyter-notebook
+cd ..   
+jupyter-notebook   
    
-go into map2loop/notebooks using browser links to 1. Hamersley map processing.ipynb
+##### go into map2loop/notebooks using browser links to 1. Hamersley map processing.ipynb   
    
-To kill the jupyter server, click in the console where you started the server and type ctrl-C a couple of times.
+##### To kill the jupyter server, click in the console where you started the server and type ctrl-C a couple of times.
    
 ### 6) To restart the server in the future, open up an anaconda console
    
