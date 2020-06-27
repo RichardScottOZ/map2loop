@@ -48,7 +48,7 @@ mkdir dirname
    
 ##### Now, download and install map2loop
    
-git clone http://github.com/Loop3D/map2loop
+<div style="display: inline">git clone http://github.com/Loop3D/map2loop</div> 
    
 ##### Use your browser to go to download LoopStructural to the same level as the map2loop directory   
 
