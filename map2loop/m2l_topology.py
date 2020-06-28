@@ -58,9 +58,10 @@ def save_units(G,path_out,glabels):
                     GD.remove_node(n)
             else:                     #group node
                 GD.remove_node(n)
-        elist=list(G.edges)
+       
+        #elist=list(G.edges)
         #display(elist)
-        egraphics=nx.get_edge_attributes(G,'graphics')
+        #egraphics=nx.get_edge_attributes(G,'graphics')
         #print(egraphics)
 
         
@@ -812,3 +813,41 @@ def super_groups_and_groups(group_girdle,tmp_path,misorientation):
         f.write('\n')
     f.close()
     return(super_groups,use_gcode3)
+
+def use_asud(strat_graph_file, usad_strat_file,graph_path):
+    G=nx.read_gml(strat_graph_file,label='id')
+
+    Gp=G.copy().to_directed()
+    USAD=pd.read_csv(usad_strat_file,",")
+
+
+    for e in G.edges:
+        glabel_0=G.nodes[e[0]]['LabelGraphics']['text']
+        glabel_1=G.nodes[e[1]]['LabelGraphics']['text']
+    
+        edge=USAD.loc[(USAD['over'] == glabel_0) & (USAD['under'] == glabel_1) ]
+        if(len(edge)>0):
+            if(Gp.has_edge(e[1],e[0])):
+                Gp.remove_edge(e[1],e[0])
+            Gp.add_edge(e[0],e[1])
+
+        edge=USAD.loc[(USAD['under'] == glabel_0) & (USAD['over'] == glabel_1) ]
+        if(len(edge)>0):
+            if(Gp.has_edge(e[0],e[1])):
+                 Gp.remove_edge(e[0],e[1])
+            Gp.add_edge(e[1],e[0])
+    
+    recode={}
+    i=0
+    for n in Gp.nodes:
+        if('isGroup' in Gp.nodes[n]):
+            recode[n]=i
+        i=i+1
+        
+            
+    for n in Gp.nodes:
+        if(not 'isGroup' in Gp.nodes[n]):
+            Gp.nodes[n]['gid']=recode[Gp.nodes[n]['gid']]
+
+    nx.write_gml(Gp,graph_path+'ASUD_strat.gml')
+

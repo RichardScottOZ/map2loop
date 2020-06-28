@@ -145,7 +145,6 @@ test_data3/vtk/*
 test_data3/test_data3*
 scratch/*
 QLD/*
-qld_src_data/*
 SA/*
 
 map2loop/.vscode/launch.json

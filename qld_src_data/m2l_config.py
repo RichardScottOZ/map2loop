@@ -3,10 +3,10 @@
 step_out=0.1   #padding arounf dtm to ensure reprojected dtm covers target area (in degrees)
 inset=0      #unused??
 
-minx=500000 #region of interest coordinates in metre-based system (or non-degree system)
-maxx=545000
-miny=7490000
-maxy=7520000
+minx=-322948  #region of interest coordinates in metre-based system (or non-degree system)
+maxx=-312316
+miny=7851854
+maxy=7861409
 model_top=1200
 model_base=-3200
 
@@ -15,59 +15,58 @@ model_base=-3200
 local_paths=True       #flag to use local or WFS source for data inputs (True = local)
 import os
 
-
 last=os.path.split(os.getcwd())[1]
 
 test_data_path='../'+last+'/'
-clut_path='../source_data/500kibg_colours.csv'
 
-data_path='../source_data/'
+data_path='../qld_src_data/data/'
+clut_path=''
 
-geology_file='hams2_geol.shp'   #input geology file (if local)
-fault_file='GEOS_GEOLOGY_LINEARSTRUCTURE_500K_GSD.shp' #input fault file (if local)
-structure_file='hams2_structure.shp' #input bedding orientation file (if local)
-mindep_file='mindeps_2018.shp' #input mineral deposit file (if local)
+geology_file='geol_clip.shp'   #input geology file (if local)
+fault_file='faults_clip.shp' #input fault file (if local)
+structure_file='outcrops_clip.shp' #input bedding orientation file (if local)
+mindep_file='mindeps_clip.shp' #input mineral deposit file (if local)
 
 #CRS
 
 src_crs = {'init': 'epsg:4326'}  # coordinate reference system for imported dtms (geodetic lat/long WGS84)
-dst_crs = {'init': 'epsg:28350'} # coordinate system for data
+dst_crs = {'init': 'epsg:28355'} # coordinate system for data
 
 #CODES AND LABELS 
 # these refer to specific fields (codes) in GIS layer or database that contain the info needed for these calcs and text substrings (labels) in the contents of these fields
 c_l= {
 #Orientations
-  "d": "DIP",                  #field that contains dip information
-  "dd": "DIP_DIR",             #field that contains dip direction information
-  "sf": 'FEATURE',             #field that contains information on type of structure
-  "bedding": 'Bed',            #text to search for in field defined by sf code to show that this is a bedding measurement
+  "d": "DIP_PLUNGE",                  #field that contains dip information
+  "dd": "AZIMUTH",             #field that contains dip direction information
+  "sf": 'STRUCTURE',             #field that contains information on type of structure
+  "bedding": 'BEDDING',            #text to search for in field defined by sf code to show that this is a bedding measurement
   "otype": 'dip direction',            #flag to determine measurement convention (currently 'strike' or 'dip direction')
-  "bo": "TYPE",             #field that contains type of foliation
-  "btype": 'overturned',            #text to search for in field defined by bo code to show that this is an overturned bedding measurement
+  "bo": "FACING",             #field that contains type of foliation
+  "btype": 'DOWN',            #text to search for in field defined by bo code to show that this is an overturned bedding measurement
 #Stratigraphy
-  "g": 'GROUP_',               #field that contains coarser stratigraphic coding
-  "g2": 'SUPERSUITE',              #field that contains alternate coarser stratigraphic coding if 'g' is blank
-  "c": 'UNITNAME',                 #field that contains finer stratigraphic coding
-  "ds": 'DESCRIPTN',           #field that contains information about lithology
-  "u": 'CODE',             #field that contains alternate stratigraphic coding (not used??)
-  "r1": 'ROCKTYPE1',           #field that contains  extra lithology information
-  "r2": 'ROCKTYPE2',           #field that contains even more lithology information
+  "g": 'parent_na',               #field that contains coarser stratigraphic coding
+  "g2": 'parent_na',              #field that contains alternate coarser stratigraphic coding if 'g' is blank
+  "c": 'Stratigrap',                 #field that contains finer stratigraphic coding
+  "ds": 'ROCK_TYPE',           #field that contains information about lithology
+  "u": 'RU_NAME',             #field that contains alternate stratigraphic coding (not used??)
+  "r1": 'LITH_SUMM',           #field that contains  extra lithology information
+  "r2": 'LITH_SUMM',           #field that contains even more lithology information
   "sill": 'sill',              #text to search for in field defined by ds code to show that this is a sill
-  "intrusive": 'intrusive',    #text to search for in field defined by ds code to show that this is an intrusion
-  "volcanic": 'volcanic',      #text to search for in field defined by ds code to show that this is an volv=canic (not intrusion)
+  "intrusive": 'INTRUSIVE',    #text to search for in field defined by ds code to show that this is an intrusion
+  "volcanic": 'VOLCANIC',      #text to search for in field defined by ds code to show that this is an volv=canic (not intrusion)
 #Mineral Deposits
-  "msc": 'SITE_CODE',          #field that contains site code of deposit
-  "msn": 'SHORT_NAME',         #field that contains short name of deposit
-  "mst": 'SITE_TYPE_',         #field that contains site type of deposit
-  "mtc": 'TARGET_COM',         #field that contains target commodity of deposit
-  "mscm": 'SITE_COMMO',        #field that contains site commodity of deposit
-  "mcom": 'COMMODITY_',        #field that contains commodity group of deposit
+  "msc": 'SITE_NO',          #field that contains site code of deposit
+  "msn": 'OCCUR_NAME',         #field that contains short name of deposit
+  "mst": 'MINE_STATU',         #field that contains site type of deposit
+  "mtc": 'MAIN_COMMO',         #field that contains target commodity of deposit
+  "mscm": 'MAIN_COM_1',        #field that contains site commodity of deposit
+  "mcom": 'ALL_COMMOD',        #field that contains commodity group of deposit
   "minf": 'Infrastructure',    #text to search for in field defined by mst code that shows site to ignore
 #Timing
-  "min": 'MIN_AGE_MA',         #field that contains minimum age of unit defined by ccode
-  "max": 'MAX_AGE_MA',         #field that contains maximum age of unit defined by ccode
+  "min": 'Top_Min_1',         #field that contains minimum age of unit defined by ccode
+  "max": 'Base_Ma_1',         #field that contains maximum age of unit defined by ccode
 #faults and folds
-  "f": 'FEATURE',              #field that contains information on type of structure
+  "f": 'TYPE',              #field that contains information on type of structure
   "fault": 'Fault',            #text to search for in field defined by f code to show that this is a fault
   "fold": 'Fold axial trace',  #text to search for in field defined by f code to show that this is a fold axial trace
   "fdip": 'DIP',               # field for numeric fault dip value
@@ -81,7 +80,7 @@ c_l= {
   "syn": 'syncline',           #text to search for in field defined by t to show that this is a syncline
 #ids
   "o": 'OBJECTID',             #field that contains unique id of geometry object
-  "gi": 'GEOPNT_ID'            #field that contains unique id of structure point
+  "gi": 'OBJECTID'            #field that contains unique id of structure point
 }
 
 #DECIMATION
@@ -117,10 +116,10 @@ dtm_path=test_data_path+'dtm/'
 output_path=test_data_path+'output/'
 vtk_path=test_data_path+'vtk/'
 
-fault_file_csv=tmp_path+fault_file.replace(".shp",".csv")
-structure_file_csv=tmp_path+structure_file.replace(".shp",".csv")
-geology_file_csv=tmp_path+geology_file.replace(".shp",".csv")
-mindep_file_csv=tmp_path+mindep_file.replace(".shp",".csv")
+fault_file_csv=tmp_path+'fault_file.csv'
+structure_file_csv=tmp_path+'structure_file.csv'
+geology_file_csv=tmp_path+'geology_file.csv'
+mindep_file_csv=tmp_path+'mindep_file.csv'
 
 fault_file=data_path+fault_file
 structure_file=data_path+structure_file
