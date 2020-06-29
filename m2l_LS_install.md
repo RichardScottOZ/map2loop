@@ -27,7 +27,7 @@ conda install -c anaconda ipywidgets    -y
 conda install -c conda-forge ipyleaflet -y   
 pip install lavavu    
 conda install -c conda-forge folium -y   
-pip install mplsteronet    
+pip install mplstereonet    
 conda install -c anaconda scikit-learn -y   
 conda install -c anaconda scikit-image -y   
     
