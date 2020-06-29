@@ -1,26 +1,35 @@
 # map2loop Package
 
-A package to extract information from geological maps to feed 3D modelling packages
+map2loop is the map deconstruction library to provide inputs to Loop ([Loop3d.org](https://loop3d.org/)). 
+The development of map2loop is lead by **Mark Jessell** at The University of Western Australia. **Yohan de Rose** at Monash University is now making it better.
 
-### This is very much a proof of concept code that is unlikely to work first time with anything but the example dataset provided, but if you would like to try it with your own data please feel free to contact me at mark.jessell@uwa.edu.au to discuss your plans.  
-
-### For Loop partners, the fastest install path (thanks to Yohan de Rose) is via docker, go to development version at:
-       
-   http://github.com/Loop3D/map2loop-2    
-   
-### otherwise follow these instructions:
-   
-<a href="https://github.com/Loop3D/map2loop/blob/master/m2l_LS_install.md">Install Instructions</a>
-
-Try the <a href="https://github.com/Loop3D/map2loop/blob/master/notebooks/1.%20Hamersley%20map%20processing.ipynb">1. Hamersley map processing.ipynb</a> notebook and if you are feeling brave, <a href="https://github.com/Loop3D/map2loop/blob/master/notebooks/1.%20map2loop%20leaflet%20example.ipynb">1. map2loop leaflet example.ipynb</a>  
-
-A recent workshop as part of the Loop/MinEx CRC collaborations provides a tutorial for map2loop and dh2loop codes. It refers to a Virtual Machine but all the codes and data can installed as above or by a normal python install. The tutorial notes are available here: <a href="https://github.com/Loop3D/map2loop/tree/master/docs/map2loop_dh2loop_tutorial.pdf" target="_blank"> HERE</a> but are now out of sync with the latest notebooks      
-   
-#### What it does:
+## What it does:
   
 -  Combines information extracted from vector geology maps in various forms to support 3D geological modelling. Outputs are simple csv files that should be readable by any 3D modelling system (I think), but specific examples are provided for <a href="https://github.com/Loop3D/LoopStructural">LoopStructural</a>, <a href="https://github.com/cgre-aachen/gempy">gempy</a>, <a href="https://www.intrepid-geophysics.com/product/geomodeller/">geomodeller</a> and <a href="https://github.com/cgre-aachen/pynoddy">noddy</a>.
 
-#### Inputs: (example data supplied) 
+Loop is led by Laurent Ailleres (Monash University) with a team of Work Package leaders from:
+* Monash University: Roy Thomson, Lachlan Grose and Robin Armit
+* University of Western Australia: Mark Jessell, Jeremie Giraud, Mark Lindsay and Guillaume Pirot
+* Geological Survey of Canada: Boyan Brodaric and Eric de Kemp
+
+## This is very much a proof of concept code that is unlikely to work first time with anything but the example dataset provided, but if you would like to try it with your own data please feel free to contact me at mark.jessell@uwa.edu.au to discuss your plans.  
+
+## For Loop partners, the fastest install path (thanks to Yohan de Rose) is via docker, go to development version at:
+       
+   http://github.com/Loop3D/map2loop-2    
+   
+## otherwise follow these instructions:
+   
+<a href="https://github.com/Loop3D/map2loop/blob/master/m2l_LS_install.md">Install Instructions</a>
+
+## Problems
+Any bugs/feature requests/comments please create a new [issue](https://github.com/Loop3D/map2loop/issues). 
+
+## Acknowledgements
+*The Loop platform is an open source 3D probabilistic geological and geophysical modelling platform, initiated by Geoscience Australia and the OneGeology consortium. The project is funded by Australian territory, State and Federal Geological Surveys, the Australian Research Council and the MinEx Collaborative Research Centre.*
+
+
+#### map2loop Inputs: (example data supplied) 
    
 - Geology as Polygons  
 - Fault and fold axial trace as PolyLines  
