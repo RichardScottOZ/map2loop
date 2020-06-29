@@ -12,13 +12,13 @@ Loop is led by Laurent Ailleres (Monash University) with a team of Work Package 
 * University of Western Australia: Mark Jessell, Jeremie Giraud, Mark Lindsay and Guillaume Pirot
 * Geological Survey of Canada: Boyan Brodaric and Eric de Kemp
 
-## This is very much a proof of concept code that is unlikely to work first time with anything but the example dataset provided, but if you would like to try it with your own data please feel free to contact me at mark.jessell@uwa.edu.au to discuss your plans.  
+### This is very much a proof of concept code that is unlikely to work first time with anything but the example dataset provided, but if you would like to try it with your own data please feel free to contact me at mark.jessell@uwa.edu.au to discuss your plans.  
 
-## For Loop partners, the fastest install path (thanks to Yohan de Rose) is via docker, go to development version at:
+### For Loop partners, the fastest install path (thanks to Yohan de Rose) is via docker, go to development version at:
        
    http://github.com/Loop3D/map2loop-2    
    
-## otherwise follow these instructions:
+### otherwise follow these instructions:
    
 <a href="https://github.com/Loop3D/map2loop/blob/master/m2l_LS_install.md">Install Instructions</a>
 
