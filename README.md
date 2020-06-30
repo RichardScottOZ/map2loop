@@ -14,7 +14,7 @@ Loop is led by Laurent Ailleres (Monash University) with a team of Work Package 
 
 ### This is very much a proof of concept code that is unlikely to work first time with anything but the example dataset provided, but if you would like to try it with your own data please feel free to contact me at mark.jessell@uwa.edu.au to discuss your plans.  
 
-### For Loop partners, the fastest install path (thanks to Yohan de Rose) is via docker, go to development version at:
+### The fastest install path (thanks to Yohan de Rose) is via docker, go to development version at:
        
    http://github.com/Loop3D/map2loop-2    
    
