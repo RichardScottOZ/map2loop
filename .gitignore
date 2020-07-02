@@ -143,6 +143,12 @@ test_data3/dtm/*
 test_data3/graph/*
 test_data3/vtk/*
 test_data3/test_data3*
+qld_src_data/tmp/*
+qld_src_data/output/*
+qld_src_data/dtm/*
+qld_src_data/graph/*
+qld_src_data/vtk/*
+qld_src_data/qld_src_data*
 scratch/*
 QLD/*
 SA/*

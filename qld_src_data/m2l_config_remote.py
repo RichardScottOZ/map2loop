@@ -18,15 +18,11 @@ local_paths=False       #flag to use local or WFS source for data inputs (True =
 data_path=''
 clut_path=''
 
-#geology_file='28355/qld_geol_28355_nb.shp'   #input geology file (if local)
-#fault_file='28355/faults_28355.shp' #input fault file (if local)
-#structure_file='28355/outcrops_28355.shp' #input bedding orientation file (if local)
-#mindep_file='28355/qld_mindeps_28355.shp' #input mineral deposit file (if local)
 
-structure_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=outcrops_28355&bbox='+bbox2+'&srs=EPSG:28355'
-geology_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=qld_geol2_28355&bbox='+bbox2+'&srs=EPSG:28355'
-mindep_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=qld_mindeps_28355&bbox='+bbox2+'&srs=EPSG:28355'
-fault_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=faults_28355&bbox='+bbox2+'&srs=EPSG:28355'
+structure_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=outcrops_28355&bbox='+bbox2+'&srsName=EPSG:28355'
+geology_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=qld_geol_dissolved_join_fix_mii_clip_wgs84&bbox='+bbox2+'&srsName=EPSG:28355'
+mindep_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=qld_mindeps_28355&bbox='+bbox2+'&srsName=EPSG:28355'
+fault_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=qld_faults_folds_28355&bbox='+bbox2+'&srsName=EPSG:28355'
 
 
 #CRS
@@ -41,18 +37,18 @@ c_l= {
   "d": "dip_plunge",                  #field that contains dip information
   "dd": "azimuth",             #field that contains dip direction information
   "sf": 'structure',             #field that contains information on type of structure
-  "bedding": 'bedding',            #text to search for in field defined by sf code to show that this is a bedding measurement
+  "bedding": 'BEDDING',            #text to search for in field defined by sf code to show that this is a bedding measurement
   "otype": 'dip direction',            #flag to determine measurement convention (currently 'strike' or 'dip direction')
   "bo": "facing",             #field that contains type of foliation
   "btype": 'DOWN',            #text to search for in field defined by bo code to show that this is an overturned bedding measurement
 #Stratigraphy
-  "g": 'parent_na',               #field that contains coarser stratigraphic coding
-  "g2": 'parent_na',              #field that contains alternate coarser stratigraphic coding if 'g' is blank
-  "c": 'stratigrap',                 #field that contains finer stratigraphic coding
-  "ds": 'rock_type',           #field that contains information about lithology
-  "u": 'ru_name',             #field that contains alternate stratigraphic coding (not used??)
-  "r1": 'lith_summ',           #field that contains  extra lithology information
-  "r2": 'lith_summ',           #field that contains even more lithology information
+  "g": 'Parent_Nam',               #field that contains coarser stratigraphic coding
+  "g2": 'Parent_Nam',              #field that contains alternate coarser stratigraphic coding if 'g' is blank
+  "c": 'Stratigrap',                 #field that contains finer stratigraphic coding
+  "ds": 'ROCK_TYPE',           #field that contains information about lithology
+  "u": 'RU_NAME',             #field that contains alternate stratigraphic coding (not used??)
+  "r1": 'LITH_SUMM',           #field that contains  extra lithology information
+  "r2": 'LITH_SUMM',           #field that contains even more lithology information
   "sill": 'sill',              #text to search for in field defined by ds code to show that this is a sill
   "intrusive": 'INTRUSIVE',    #text to search for in field defined by ds code to show that this is an intrusion
   "volcanic": 'VOLCANIC',      #text to search for in field defined by ds code to show that this is an volv=canic (not intrusion)
@@ -65,12 +61,12 @@ c_l= {
   "mcom": 'all_commod',        #field that contains commodity group of deposit
   "minf": 'Infrastructure',    #text to search for in field defined by mst code that shows site to ignore
 #Timing
-  "min": 'top_mi_1',         #field that contains minimum age of unit defined by ccode
-  "max": 'base_ma_1',         #field that contains maximum age of unit defined by ccode
+  "min": 'Top_Mini_1',         #field that contains minimum age of unit defined by ccode
+  "max": 'Base_Max_1',         #field that contains maximum age of unit defined by ccode
 #faults and folds
   "f": 'type',              #field that contains information on type of structure
   "fault": 'Fault',            #text to search for in field defined by f code to show that this is a fault
-  "fold": 'Fold axial trace',  #text to search for in field defined by f code to show that this is a fold axial trace
+  "fold": 'Fold',           #text to search for in field defined by f code to show that this is a fold axial trace
   "fdip": 'dip',               # field for numeric fault dip value
   "fdipnull": '0',         # text to search for in field defined by fdip to show that this has no known dip
   "fdipdir": 'dip_dir',        # field for text fault dip direction value 
@@ -78,8 +74,8 @@ c_l= {
   "fdipest": 'dip_est',        # field for text fault dip estimate value
   "fdipest_vals": 'gentle,moderate,steep',        # text to search for in field defined by fdipest to give fault dip estimate in increasing steepness
   "n": 'name',                 #field that contains information on name of fault (not used??)
-  "t": 'type',                 #field that contains information on type of fold
-  "syn": 'syncline',           #text to search for in field defined by t to show that this is a syncline
+  "t": 'id_desc',                 #field that contains information on type of fold
+  "syn": 'Syncline',           #text to search for in field defined by t to show that this is a syncline
 #ids
   "o": 'objectid',             #field that contains unique id of geometry object
   "gi": 'objectid'            #field that contains unique id of structure point

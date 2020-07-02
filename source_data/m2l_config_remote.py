@@ -120,7 +120,7 @@ vtk_path=test_data_path+'vtk/'
 
 fault_file_csv=tmp_path+'fault_file.csv'
 structure_file_csv=tmp_path+'structure_file.csv'
-geology_file_csv=tmp_path+'geology_file_file.csv'
+geology_file_csv=tmp_path+'geology_file.csv'
 mindep_file_csv=tmp_path+'mindep_file.csv'
 
 fault_file=data_path+fault_file

@@ -6,14 +6,14 @@ import warnings
 import numpy as np
    
 #explodes polylines and modifies objectid for exploded parts
-def explode_polylines(indf,c_l):                                        
+def explode_polylines(indf,c_l,dst_crs):                                        
     #indf = gpd.GeoDataFrame.from_file(indata)                  
-    outdf = gpd.GeoDataFrame(columns=indf.columns)              
+    outdf = gpd.GeoDataFrame(columns=indf.columns, crs=dst_crs)              
     for idx, row in indf.iterrows():                            
         if type(row.geometry) == LineString:                    
             outdf = outdf.append(row,ignore_index=True)         
         if type(row.geometry) == MultiLineString:               
-            multdf = gpd.GeoDataFrame(columns=indf.columns)     
+            multdf = gpd.GeoDataFrame(columns=indf.columns, crs=dst_crs)     
             recs = len(row.geometry)                            
             multdf = multdf.append([row]*recs,ignore_index=True)
             i=0
@@ -127,7 +127,7 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,tmp_path,bbox,c
 
         faults_clip=m2l_utils.clip_shp(fault_folds,polygo)
 
-        faults_explode=explode_polylines(faults_clip,c_l)     
+        faults_explode=explode_polylines(faults_clip,c_l,dst_crs)     
         if(len(faults_explode)>len(faults_clip)):
            m2l_warnings.append('some faults are MultiPolyLines, and have been split')
         faults_explode.crs = dst_crs
@@ -164,27 +164,30 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,tmp_path,bbox,c
         warnings.warn('The errors listed above must be fixed prior to rerunning map2loop')                            
         for e in m2l_errors:
             print("    ",e)
+        raise NameError('map2loop error: Fix errors before running again')
     
     if(len(m2l_errors)==0):
         print('\nNo errors found, clipped and updated files saved to tmp')
         
         if(len(faults_explode)>0):
             fault_file=tmp_path+'faults_clip.shp'
-            faults_explode.crs=fault_folds.crs
+            faults_explode.crs=dst_crs
             faults_explode.to_file(fault_file)         
         
         geol_clip=gpd.overlay(geology, polygo, how='intersection')
         if(len(geol_clip)>0):
-            geol_clip.crs=geology.crs
+            geol_clip.crs=dst_crs
             geol_file=tmp_path+'geol_clip.shp'
             geol_clip.to_file(geol_file)         
         
         if(len(orientations)>0):
             structure_file=tmp_path+'structure_clip.shp'
+            orientations.crs=dst_crs
             orientations.to_file(structure_file)         
         
         if(len(mindeps)>0):
             mindep_file=tmp_path+'mindeps_clip.shp'
+            mindeps.crs=dst_crs
             mindeps.to_file(mindep_file)
         return(structure_file,geol_file,fault_file,mindep_file)
 

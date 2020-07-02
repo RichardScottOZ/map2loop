@@ -586,7 +586,7 @@ def save_faults_wkt(sub_lines,fault_file_csv,c_l):
 # 
 # Creates input parameter file for map2model c++ code and saves it to the same directory as the map2model binary (../m2m_cpp)
 ####################################
-def save_Parfile(m2m_cpp_path,c_l,graph_path,geology_file_csv,fault_file_csv,structure_file_csv,mindep_file_csv,minx,maxx,miny,maxy,deposit_dist,commodities):
+def save_Parfile(m2m_cpp_path,c_l,graph_path,geology_file_csv,fault_file_csv,structure_file_csv,mindep_file_csv,minx,maxx,miny,maxy,deposit_dist,commodities,age):
     f=open(m2m_cpp_path+'Parfile','w')
     f.write('--- COLUMN NAMES IN CSV DATA FILES: -------------------------------------------------------------\n')
     f.write('OBJECT COORDINATES              =WKT\n')
@@ -625,7 +625,7 @@ def save_Parfile(m2m_cpp_path,c_l,graph_path,geology_file_csv,fault_file_csv,str
     f.write('Clipping window X1 Y1 X2 Y2 (zeros for infinite)    ='+str(minx)+' '+str(miny)+' '+str(maxx)+' '+str(maxy)+'\n')
     f.write('Min length fraction for strat/fault graphs          =0.0\n')
     f.write('Graph edge width categories (three doubles)         =2000. 20000. 200000.\n')
-    f.write('Graph edge direction (0-min age, 1-max age, 2-avg)  =2\n')
+    f.write('Graph edge direction (0-min age, 1-max age, 2-avg)  ='+str(age)+'\n')
     f.write('Deposit names for adding info on the graph          ='+commodities+'\n')
     f.write('Partial graph polygon ID                            =32\n')
     f.write('Partial graph depth                                 =4\n')
@@ -826,15 +826,19 @@ def use_asud(strat_graph_file, usad_strat_file,graph_path):
         glabel_1=G.nodes[e[1]]['LabelGraphics']['text']
     
         edge=USAD.loc[(USAD['over'] == glabel_0) & (USAD['under'] == glabel_1) ]
-        if(len(edge)>0):
+        if(len(edge)>0 and (not('isGroup' in Gp.nodes[e[0]]) and not('isGroup' in Gp.nodes[e[1]]))):
             if(Gp.has_edge(e[1],e[0])):
                 Gp.remove_edge(e[1],e[0])
+            if(Gp.has_edge(e[0],e[1])):
+                 Gp.remove_edge(e[0],e[1])
             Gp.add_edge(e[0],e[1])
 
         edge=USAD.loc[(USAD['under'] == glabel_0) & (USAD['over'] == glabel_1) ]
-        if(len(edge)>0):
+        if(len(edge)>0 and (not('isGroup' in Gp.nodes[e[0]]) and not('isGroup' in Gp.nodes[e[1]]))):
             if(Gp.has_edge(e[0],e[1])):
                  Gp.remove_edge(e[0],e[1])
+            if(Gp.has_edge(e[1],e[0])):
+                Gp.remove_edge(e[1],e[0])
             Gp.add_edge(e[1],e[0])
     
     recode={}
@@ -848,6 +852,17 @@ def use_asud(strat_graph_file, usad_strat_file,graph_path):
     for n in Gp.nodes:
         if(not 'isGroup' in Gp.nodes[n]):
             Gp.nodes[n]['gid']=recode[Gp.nodes[n]['gid']]
+            
+    # check for cycle and arbitrarily remove first of the edges
+    try:
+        cycles=list(nx.simple_cycles(G))
+        for c in cycles:
+            G.remove_edge(c[0], c[1])
+            warning_msg='map2loop warning: The stratigraphic relationship: "'+c[0]+' overlies '+c[1]+'" was removed as it conflicts with another relationship'
+            warnings.warn(warning_msg)
+    except:
+        print('no cycles')
+        
 
     nx.write_gml(Gp,graph_path+'ASUD_strat.gml')
 

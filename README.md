@@ -1,6 +1,6 @@
 # map2loop Package
 
-map2loop is the map deconstruction library to provide inputs to Loop ([Loop3d.org](https://loop3d.org/)). 
+map2loop is a map deconstruction library to provide inputs to Loop ([Loop3d.org](https://loop3d.org/)). 
 The development of map2loop is lead by **Mark Jessell** at The University of Western Australia. **Yohan de Rose** at Monash University is now making it better.
 
 ## What it does:
