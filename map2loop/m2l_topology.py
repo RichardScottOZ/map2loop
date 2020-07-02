@@ -46,25 +46,22 @@ def get_series(path_in,id_label):
 # 
 # The choice of what constitutes basic unit and what a group of units is defined in the c_l codes. Not even sure we need two levels but it seemed like a good idea at the time. Text outputs list alternate topologies for series and surfaces, which if confirmed by comapring max-min ages will be a nice source of uncertainty.
 ####################################
-def save_units(G,path_out,glabels):
+def save_units(G,path_out,glabels,Australia):
+    if Australia:
+        asud_strat_file='../source_data/USAD.csv'
+        ASUD=pd.read_csv(asud_strat_file,',') 
     for p in glabels: #process each group, removing nodes that are not part of that group, and other groups
         GD=G.copy() #temporary copy of full graph
         #print()
         #print(p,glabels[p].replace(" ","_").replace("-","_"),"----------------------")
         nlist=list(G.nodes)
-        #display(nlist)
+
         for n in nlist: # Calculate total number of groups and their names groups
             if('gid' in GD.nodes[n]): #normal node
                 if(GD.nodes[n]['gid']!=p): #normal node but not part of current group
                     GD.remove_node(n)
             else:                     #group node
                 GD.remove_node(n)
-       
-        #elist=list(G.edges)
-        #display(elist)
-        #egraphics=nx.get_edge_attributes(G,'graphics')
-        #print(egraphics)
-
         
         labels = {}
         for node in GD.nodes():   #local store of node labels     
@@ -72,9 +69,42 @@ def save_units(G,path_out,glabels):
 
         cycles=nx.simple_cycles(GD)
         for cy in cycles:
-            warning_msg='map2loop warning: Stratigraphic relationship: '+ str(G.nodes[cy[0]]['LabelGraphics']['text'])+' overlies '+str(G.nodes[cy[1]]['LabelGraphics']['text'])+' removed to prevent cycle'      
-            warnings.warn(warning_msg)
-            GD.remove_edge(cy[0],cy[1])
+            found=False
+            if Australia:
+                len_cy=len(cy)
+                for i in range(len_cy-1):
+                    glabel_0=GD.nodes[cy[i]]['LabelGraphics']['text']
+                    glabel_1=GD.nodes[cy[i+1]]['LabelGraphics']['text']
+                    edge=ASUD.loc[(ASUD['over'] == glabel_0) & (ASUD['under'] == glabel_1) ]
+                    if(len(edge)==0 and (not('isGroup' in GD.nodes[cy[i]]) and not('isGroup' in GD.nodes[cy[i+1]]))):
+                        if(GD.has_edge(cy[i],cy[i+1])):
+                            continue
+                        else:
+                            warning_msg='map2loop warning 1: Stratigraphic relationship: '+ str(GD.nodes[cy[i]]['LabelGraphics']['text'])+' overlies '+str(GD.nodes[cy[i+1]]['LabelGraphics']['text'])+' removed to prevent cycle'      
+                            warnings.warn(warning_msg)
+                            GD.remove_edge(cy[i],cy[i+1])
+                            found=True
+
+                            
+                if(not found):
+                    glabel_0=GD.nodes[cy[len_cy-1]]['LabelGraphics']['text']
+                    glabel_1=GD.nodes[cy[0]]['LabelGraphics']['text']
+                    edge=ASUD.loc[(ASUD['over'] == glabel_0) & (ASUD['under'] == glabel_1) ]
+                    if(len(edge)==0 and (not('isGroup' in GD.nodes[cy[len_cy-1]]) and not('isGroup' in GD.nodes[cy[0]]))):
+                        if( GD.has_edge(cy[len_cy-1],cy[0])):
+                            warning_msg='map2loop warning 1: Stratigraphic relationship: '+ str(GD.nodes[cy[len_cy-1]]['LabelGraphics']['text'])+' overlies '+str(GD.nodes[cy[0]]['LabelGraphics']['text'])+' removed to prevent cycle'      
+                            warnings.warn(warning_msg)
+                            GD.remove_edge(cy[len_cy-1],cy[0])
+                            found=True
+                    if(not found):
+                        warning_msg='map2loop warning 2: Stratigraphic relationship: '+ str(GD.nodes[cy[0]]['LabelGraphics']['text'])+' overlies '+str(GD.nodes[cy[1]]['LabelGraphics']['text'])+' removed to prevent cycle'      
+                        warnings.warn(warning_msg)
+                        GD.remove_edge(cy[0],cy[1])
+                   
+            else:
+                warning_msg='map2loop warning 3: Stratigraphic relationship: '+ str(GD.nodes[cy[0]]['LabelGraphics']['text'])+' overlies '+str(GD.nodes[cy[1]]['LabelGraphics']['text'])+' removed to prevent cycle'      
+                warnings.warn(warning_msg)
+                GD.remove_edge(cy[0],cy[1])
         
         plt.figure(p+1) #display strat graph for one group
         plt.title(glabels[p])
@@ -96,7 +126,6 @@ def save_units(G,path_out,glabels):
                 #print("....")
             f.write('\n')
         f.close()
-
 
 
 ####################################
@@ -821,18 +850,18 @@ def super_groups_and_groups(group_girdle,tmp_path,misorientation):
     f.close()
     return(super_groups,use_gcode3)
 
-def use_asud(strat_graph_file, usad_strat_file,graph_path):
+def use_asud(strat_graph_file, asud_strat_file,graph_path):
     G=nx.read_gml(strat_graph_file,label='id')
 
     Gp=G.copy().to_directed()
-    USAD=pd.read_csv(usad_strat_file,",")
+    ASUD=pd.read_csv(asud_strat_file,",")
 
 
     for e in G.edges:
         glabel_0=G.nodes[e[0]]['LabelGraphics']['text']
         glabel_1=G.nodes[e[1]]['LabelGraphics']['text']
     
-        edge=USAD.loc[(USAD['over'] == glabel_0) & (USAD['under'] == glabel_1) ]
+        edge=ASUD.loc[(ASUD['over'] == glabel_0) & (ASUD['under'] == glabel_1) ]
         if(len(edge)>0 and (not('isGroup' in Gp.nodes[e[0]]) and not('isGroup' in Gp.nodes[e[1]]))):
             if(Gp.has_edge(e[1],e[0])):
                 Gp.remove_edge(e[1],e[0])
@@ -840,7 +869,7 @@ def use_asud(strat_graph_file, usad_strat_file,graph_path):
                  Gp.remove_edge(e[0],e[1])
             Gp.add_edge(e[0],e[1])
 
-        edge=USAD.loc[(USAD['under'] == glabel_0) & (USAD['over'] == glabel_1) ]
+        edge=ASUD.loc[(ASUD['under'] == glabel_0) & (ASUD['over'] == glabel_1) ]
         if(len(edge)>0 and (not('isGroup' in Gp.nodes[e[0]]) and not('isGroup' in Gp.nodes[e[1]]))):
             if(Gp.has_edge(e[0],e[1])):
                  Gp.remove_edge(e[0],e[1])
