@@ -9,6 +9,7 @@ import shapely.affinity
 from shapely.ops import split
 from shapely.geometry import Point, LineString, MultiLineString, GeometryCollection, Polygon
 from math import degrees,atan2, acos, degrees
+import warnings
 
 from map2loop import m2l_utils
 
@@ -68,6 +69,12 @@ def save_units(G,path_out,glabels):
         labels = {}
         for node in GD.nodes():   #local store of node labels     
             labels[node] = G.nodes[node]['LabelGraphics']['text'].replace(" ","_").replace("-","_")
+
+        cycles=nx.simple_cycles(GD)
+        for cy in cycles:
+            warning_msg='map2loop warning: Stratigraphic relationship: '+ str(G.nodes[cy[0]]['LabelGraphics']['text'])+' overlies '+str(G.nodes[cy[1]]['LabelGraphics']['text'])+' removed to prevent cycle'      
+            warnings.warn(warning_msg)
+            GD.remove_edge(cy[0],cy[1])
         
         plt.figure(p+1) #display strat graph for one group
         plt.title(glabels[p])
