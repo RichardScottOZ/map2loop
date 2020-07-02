@@ -77,7 +77,7 @@ c_l= {
   "t": 'id_desc',                 #field that contains information on type of fold
   "syn": 'Syncline',           #text to search for in field defined by t to show that this is a syncline
 #ids
-  "o": 'OBJECTID',             #field that contains unique id of geometry object
+  "o": 'objectid',             #field that contains unique id of geometry object
   "gi": 'objectid'            #field that contains unique id of structure point
 }
 
