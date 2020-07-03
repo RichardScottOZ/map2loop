@@ -62,7 +62,7 @@ c_l= {
   "minf": 'Infrastructure',    #text to search for in field defined by mst code that shows site to ignore
 #Timing
   "min": 'Top_Mini_1',         #field that contains minimum age of unit defined by ccode
-  "max": 'Base_Max_1',         #field that contains maximum age of unit defined by ccode
+  "max": 'ASUD_AGE',         #field that contains maximum age of unit defined by ccode
 #faults and folds
   "f": 'type',              #field that contains information on type of structure
   "fault": 'Fault',            #text to search for in field defined by f code to show that this is a fault
