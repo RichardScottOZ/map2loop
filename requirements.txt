@@ -1,4 +1,5 @@
 rasterio
+libspatialindex
 rtree>=0.8
 geopandas
 networkx
