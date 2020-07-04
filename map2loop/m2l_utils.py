@@ -13,7 +13,7 @@ from urllib.request import urlopen
 from IPython.display import Image
 from math import sin, cos, atan, atan2, asin, radians, degrees, sqrt, pow, acos, fmod, fabs, isnan
 from owslib.wcs import WebCoverageService
-from osgeo import gdal
+#from osgeo import gdal
 
 ############################################
 # output version number
