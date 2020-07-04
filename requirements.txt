@@ -11,7 +11,7 @@ ipywidgets
 ipyleaflet
 lavavu
 folium
-mplstereonet>=0.6
+mplstereonet
 scikit-learn
 scikit-image
 LoopStructural
