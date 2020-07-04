@@ -15,3 +15,4 @@ mplstereonet
 scikit-learn
 scikit-image
 LoopStructural
+rtree
