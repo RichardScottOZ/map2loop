@@ -1,4 +1,5 @@
 rasterio
+rtree
 geopandas
 networkx
 cython
@@ -15,4 +16,4 @@ mplstereonet
 scikit-learn
 scikit-image
 LoopStructural
-rtree
+
