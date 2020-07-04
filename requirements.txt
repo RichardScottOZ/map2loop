@@ -1,5 +1,5 @@
 rasterio
-rtree
+rtree>=0.8
 geopandas
 networkx
 cython
