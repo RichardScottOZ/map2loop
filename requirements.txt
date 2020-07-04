@@ -1,6 +1,5 @@
 rasterio
-libspatialindex
-rtree>=0.8
+Rtree
 geopandas
 networkx
 cython
