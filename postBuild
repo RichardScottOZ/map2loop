@@ -1,9 +1,17 @@
 #!/bin/bash
 # Installation of map2model
 
-cd m2m_source
+git clone https://github.com/joferkington/mplstereonet.git
+cd mplstereonet
+setup.py install
+
+cd ../m2m_source
 mkdir build
 cd build
 cmake ..
 make
 cp map2model ../../m2m_cpp/map2model
+
+git clone https://github.com/joferkington/mplstereonet.git
+cd mplstereonet
+setup.py install
