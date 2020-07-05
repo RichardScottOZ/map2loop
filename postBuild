@@ -3,7 +3,7 @@
 
 git clone https://github.com/joferkington/mplstereonet.git
 cd mplstereonet
-setup.py install
+python setup.py install
 
 cd ../m2m_source
 mkdir build
@@ -12,6 +12,3 @@ cmake ..
 make
 cp map2model ../../m2m_cpp/map2model
 
-git clone https://github.com/joferkington/mplstereonet.git
-cd mplstereonet
-python setup.py install
