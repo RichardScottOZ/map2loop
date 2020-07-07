@@ -27,7 +27,6 @@ conda install -c anaconda ipywidgets    -y
 conda install -c conda-forge ipyleaflet -y   
 pip install lavavu    
 conda install -c conda-forge folium -y   
-pip install mplstereonet    
 conda install -c anaconda scikit-learn -y   
 conda install -c anaconda scikit-image -y   
     
@@ -60,6 +59,14 @@ pip install LoopStructural-1.0.1-cp37-cp37m-win_amd64.whl
 cd map2loop   
 python setup.py install --user   
     
+
+##### Download and install mplsteronet
+   
+cd ..   
+git clone https://github.com/joferkington/mplstereonet.git   
+cd mplstereonet   
+python setup.py install   
+   
 ### 5) Finally start up the jupyter server:
    
 cd ..   
