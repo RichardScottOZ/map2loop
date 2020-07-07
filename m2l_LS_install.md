@@ -28,7 +28,7 @@ conda install -c conda-forge ipyleaflet -y
 pip install lavavu    
 conda install -c conda-forge folium -y   
 conda install -c anaconda scikit-learn -y   
-conda install -c conda-forge scikit-image -y
+conda install -c conda-forge scikit-image -y   
    
 ### 4)  Navigate to where you want to store your files: 
    
