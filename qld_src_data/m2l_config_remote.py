@@ -23,6 +23,7 @@ structure_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1
 geology_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=qld_geol_dissolved_join_fix_mii_clip_wgs84&bbox='+bbox2+'&srsName=EPSG:28355'
 mindep_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=qld_mindeps_28355&bbox='+bbox2+'&srsName=EPSG:28355'
 fault_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=qld_faults_folds_28355&bbox='+bbox2+'&srsName=EPSG:28355'
+fold_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=qld_faults_folds_28355&bbox='+bbox2+'&srsName=EPSG:28355'
 
 
 #CRS
@@ -66,6 +67,7 @@ c_l= {
 #faults and folds
   "f": 'type',              #field that contains information on type of structure
   "fault": 'Fault',            #text to search for in field defined by f code to show that this is a fault
+  "ff": 'type',              #field that contains information on type of structure
   "fold": 'Fold',           #text to search for in field defined by f code to show that this is a fold axial trace
   "fdip": 'dip',               # field for numeric fault dip value
   "fdipnull": '0',         # text to search for in field defined by fdip to show that this has no known dip
@@ -120,6 +122,7 @@ geology_file_csv=tmp_path+'geology_file_file.csv'
 mindep_file_csv=tmp_path+'mindep_file.csv'
 
 fault_file=data_path+fault_file
+fold_file=data_path+fold_file
 structure_file=data_path+structure_file
 geology_file=data_path+geology_file
 mindep_file=data_path+mindep_file

@@ -24,6 +24,7 @@ clut_path=''
 
 geology_file='geol_clip.shp'   #input geology file (if local)
 fault_file='faults_clip.shp' #input fault file (if local)
+fold_file='faults_clip.shp' #input fold file (if local)
 structure_file='outcrops_clip.shp' #input bedding orientation file (if local)
 mindep_file='mindeps_clip.shp' #input mineral deposit file (if local)
 
@@ -68,6 +69,7 @@ c_l= {
 #faults and folds
   "f": 'TYPE',              #field that contains information on type of structure
   "fault": 'Fault',            #text to search for in field defined by f code to show that this is a fault
+  "ff": 'TYPE',              #field that contains information on type of structure
   "fold": 'Fold axial trace',  #text to search for in field defined by f code to show that this is a fold axial trace
   "fdip": 'DIP',               # field for numeric fault dip value
   "fdipnull": '0',         # text to search for in field defined by fdip to show that this has no known dip
@@ -122,6 +124,7 @@ geology_file_csv=tmp_path+'geology_file.csv'
 mindep_file_csv=tmp_path+'mindep_file.csv'
 
 fault_file=data_path+fault_file
+fold_file=data_path+fold_file
 structure_file=data_path+structure_file
 geology_file=data_path+geology_file
 mindep_file=data_path+mindep_file

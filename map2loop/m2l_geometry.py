@@ -381,39 +381,49 @@ def save_basal_contacts(path_in,dtm,dtb,dtb_null,cover_map,geol_clip,contact_dec
 # Saves out a csv file of decimated basal contacts with height and formation information.
 #########################################
 def save_basal_no_faults(path_out,path_fault,ls_dict,dist_buffer,c_l,dst_crs):
-    faults_clip = gpd.read_file(path_fault)
-    faults_clip=faults_clip[faults_clip[c_l['f']].str.contains(c_l['fault'])]
+    
+    if(os.path.exists(path_fault)):
+        faults_clip_all = gpd.read_file(path_fault)
+        faults_clip=faults_clip_all[faults_clip_all[c_l['f']].str.contains(c_l['fault'])]
+
+        df = DataFrame.from_dict(ls_dict, "index")
+        contacts = GeoDataFrame(df,crs=dst_crs, geometry='geometry')
 
 
-    df = DataFrame.from_dict(ls_dict, "index")
-    contacts = GeoDataFrame(df,crs=dst_crs, geometry='geometry')
+        fault_zone = faults_clip.buffer(dist_buffer) #defines buffer around faults where strat nodes will be removed
+        all_fz = fault_zone.unary_union
 
-    fault_zone = faults_clip.buffer(dist_buffer) #defines buffer around faults where strat nodes will be removed
-    all_fz = fault_zone.unary_union
-
-    contacts_nofaults = contacts.difference(all_fz) #deletes contact nodes within buffer
-    ls_nf={}
-
-    cnf_copy=contacts_nofaults.copy()
-
-    #print(contacts_nofaults.shape)
-    for i in range(0,len(contacts_nofaults)): 
-        j=len(contacts_nofaults)-i-1
-        #print(j)
-        if(cnf_copy.iloc[j].geom_type=="GeometryCollection"):#remove rows with geometry collections (== empty?)
-            cnf_copy.drop([j,j],inplace=True)
-        else: # save to dataframe
-            ls_nf[j]= {"id": j,c_l['c']:df.iloc[j][c_l['c']].replace(" ","_").replace("-","_"),c_l['g']:df.iloc[j][c_l['g']].replace(" ","_").replace("-","_"), "geometry": cnf_copy.iloc[j]}
-
-
-
-    df_nf = DataFrame.from_dict(ls_nf, "index")
-
-    contacts_nf = GeoDataFrame(df_nf,crs=dst_crs, geometry='geometry')
-    contacts_nf.to_file(driver = 'ESRI Shapefile', filename= path_out)
-
-    #contacts_nofaults = gpd.read_file('./data/faults_clip.shp')
-    print("basal contacts without faults saved as",path_out)
+        contacts_nofaults = contacts.difference(all_fz) #deletes contact nodes within buffer
+    
+    
+        
+        ls_nf={}
+    
+        cnf_copy=contacts_nofaults.copy()
+    
+        #print(contacts_nofaults.shape)
+        for i in range(0,len(contacts_nofaults)): 
+            j=len(contacts_nofaults)-i-1
+            #print(j)
+            if(cnf_copy.iloc[j].geom_type=="GeometryCollection"):#remove rows with geometry collections (== empty?)
+                cnf_copy.drop([j,j],inplace=True)
+            else: # save to dataframe
+                ls_nf[j]= {"id": j,c_l['c']:df.iloc[j][c_l['c']].replace(" ","_").replace("-","_"),c_l['g']:df.iloc[j][c_l['g']].replace(" ","_").replace("-","_"), "geometry": cnf_copy.iloc[j]}
+    
+    
+    
+        df_nf = DataFrame.from_dict(ls_nf, "index")
+    
+        contacts_nf = GeoDataFrame(df_nf,crs=dst_crs, geometry='geometry')
+        contacts_nf.to_file(driver = 'ESRI Shapefile', filename= path_out)
+    
+        #contacts_nofaults = gpd.read_file('./data/faults_clip.shp')
+        print("basal contacts without faults saved as",path_out)
+    else:
+        df = DataFrame.from_dict(ls_dict, "index")                   
+        contacts = GeoDataFrame(df,crs=dst_crs, geometry='geometry') 
+        contacts.to_file(driver = 'ESRI Shapefile', filename= path_out)        
+        print("basal contacts without faults saved as",path_out)
 
 #########################################
 # Save basal contacts from shapefile with decimation
@@ -548,7 +558,6 @@ def save_contacts_with_faults_removed(path_fault,path_out,dist_buffer,ls_dict,ls
 #########################################  
 
 def save_faults(path_faults,output_path,dtm,dtb,dtb_null,cover_map,c_l,fault_decimate,fault_min_len,fault_dip):
-    faults_clip=gpd.read_file(path_faults)
     f=open(output_path+'/faults.csv',"w")
     f.write("X,Y,Z,formation\n")
     fo=open(output_path+'/fault_orientations.csv',"w")
@@ -557,153 +566,28 @@ def save_faults(path_faults,output_path,dtm,dtb,dtb_null,cover_map,c_l,fault_dec
     fd=open(output_path+'/fault_dimensions.csv',"w")
     fd.write("Fault,HorizontalRadius,VerticalRadius,InfluenceDistance\n")
     #fd.write("Fault_ID,strike,dip_direction,down_dip\n")
-    
-    split=c_l['fdipest_vals'].split(",") #convert text dips to equally spaced angles
-    fault_dip_choices=np.linspace(0,90, len(split)+1)
-    dip_dirs={'north':(0.0,1.0),'northeast':(.707,.707),'east':(1.0,0.0),'southeast':(.707,-.707),
-              'south':(0.0,-1.0),'southwest':(-.707,-.707),'west':(-1.0,0.0),'northwest':(-.707,.707)}
-    
-    
-    for indx,flt in faults_clip.iterrows():
-        if(c_l['fault'] in flt[c_l['f']]):
-            fault_name='Fault_'+str(flt[c_l['o']])
-            #display(flt.geometry.type)
-            if(flt.geometry.type=='LineString'):
-                flt_ls=LineString(flt.geometry)
-                dlsx=flt_ls.coords[0][0]-flt_ls.coords[len(flt_ls.coords)-1][0]
-                dlsy=flt_ls.coords[0][1]-flt_ls.coords[len(flt_ls.coords)-1][1]
-                strike=sqrt((dlsx*dlsx)+(dlsy*dlsy))
-                if(strike>fault_min_len):
-                    i=0
-                    saved=0
-                    for afs in flt_ls.coords:
-                        if(m2l_utils.mod_safe(i,fault_decimate)==0 or i==int((len(flt_ls.coords)-1)/2) or i==len(flt_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape                         
-                            if(saved==0):
-                                p1x=afs[0]
-                                p1y=afs[1]
-                            elif(saved==1):
-                                p2x=afs[0]
-                                p2y=afs[1]
-                            elif(saved==2):
-                                p3x=afs[0]
-                                p3y=afs[1]
-                                # avoids narrow angles in fault traces which geomodeller refuses to solve
-                                # should really split fault in two at apex, but life is too short
-                                if(m2l_utils.tri_angle(p2x,p2y,p1x,p1y,p3x,p3y)<45.0): 
-                                    break
-                            elif(saved>2):
-                                p1x=p2x
-                                p1y=p2y
-                                p2x=p3x
-                                p2y=p3y
-                                p3x=afs[0]
-                                p3y=afs[1]
-                                # avoids narrow angles in fault traces which geomodeller refuses to solve
-                                # should really split fault in two at apex, but life is too short
-                                if(m2l_utils.tri_angle(p2x,p2y,p1x,p1y,p3x,p3y)<45.0):
-                                    break 
-                            saved=saved+1
-                            locations=[(afs[0],afs[1])]     
-                            height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                            # slightly randomise first and last points to avoid awkward quadruple junctions etc.
-                            #if(i==0 or i==len(flt_ls.coords)-1):
-                            #    ostr=str(afs[0]+np.random.ranf())+","+str(afs[1]+np.random.ranf())+","+str(height)+","+fault_name+"\n"
-                            #else:
-                            ostr="{},{},{},{}\n"\
-                                 .format(afs[0],afs[1],height,fault_name)
-                            #ostr=str(afs[0])+","+str(afs[1])+","+str(height)+","+fault_name+"\n"                            
-                            f.write(ostr)                
-                        i=i+1  
-                    if(dlsx==0.0 or dlsy == 0.0):
-                        continue
-                    lsx=dlsx/sqrt((dlsx*dlsx)+(dlsy*dlsy))
-                    lsy=dlsy/sqrt((dlsx*dlsx)+(dlsy*dlsy))        
-                    azimuth=degrees(atan2(lsy,-lsx)) % 180 #normal to line segment           
-                    locations=[(flt_ls.coords[int((len(afs)-1)/2)][0],flt_ls.coords[int((len(afs)-1)/2)][1])]     
-                    height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                    
-                    if(flt[c_l['o']]=='-1'):
-                        print(flt[c_l['o']],c_l['fdip'],flt[c_l['fdip']],c_l['fdipnull'],c_l['fdipest'],
-                          flt[c_l['fdipest']],c_l['fdipest_vals'])
-                    
-                    if(flt[c_l['fdip']]==c_l['fdipnull']): # null specifc dip defined
-                        if(not str(flt[c_l['fdipest']])=='None'): #  dip estimate defined
-                            i=0
-                            for choice in split:
-                                if(flt[c_l['o']]=='-1'):
-                                    print(choice)
-                                if(choice == flt[c_l['fdipest']]):
-                                    fault_dip=int(fault_dip_choices[i+1])
-                                    if(flt[c_l['o']]=='-1'):
-                                        print('found_dip',fault_dip)
-                                i=i+1
-                        else:
-                            if(fault_dip == -999): # random flag
-                                fault_dip=random.randint(60,90)
-                    else:
-                        fault_dip=int(flt[c_l['fdip']]) # specific dip defined
-                    
-                    if(c_l['fdipdir_flag']=='num'): # numeric dip direction defined
-                        azimuth=flt[c_l['fdipdir']]
-                    elif(not str(flt[c_l['fdipdir']])=='None' and not flt[c_l['fdip']]== c_l['fdipnull'] ): # alpha dip direction defined
-                        dotprod=degrees(acos((-lsx*dip_dirs[flt[c_l['fdipdir']]][0])+(lsy*dip_dirs[flt[c_l['fdipdir']]][1])))
-                        if(dotprod>45):
-                            fault_dip=-fault_dip
-
-                        
-                    ostr="{},{},{},{},{},{},{}\n"\
-                         .format(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0],flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1],
-                                 height,azimuth,fault_dip,1,fault_name)
-                    #ostr=str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0])+","+str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1])+","+height+","+str(azimuth)+","+str(fault_dip)+",1,"+fault_name+"\n"
-                    fo.write(ostr)
-                    strike=strike*1.25
-                    ostr="{},{},{},{}\n"\
-                         .format(fault_name,strike/2,strike,strike/4.0)
-                    #ostr=fault_name+","+str(strike/2)+","+str(strike)+","+str(strike/4.0)+"\n"
-                    fd.write(ostr)
-            elif(flt.geometry.type=='MultiLineString' or flt.geometry.type=='GeometryCollection' ): #shouldn't happen any more
-                sum_strike=0
-                first=True
-                for pline in flt.geometry:
-                    flt_ls=LineString(pline)
+    if(os.path.exists(path_faults)):
+        faults_clip=gpd.read_file(path_faults)
+            
+        split=c_l['fdipest_vals'].split(",") #convert text dips to equally spaced angles
+        fault_dip_choices=np.linspace(0,90, len(split)+1)
+        dip_dirs={'north':(0.0,1.0),'northeast':(.707,.707),'east':(1.0,0.0),'southeast':(.707,-.707),
+                  'south':(0.0,-1.0),'southwest':(-.707,-.707),'west':(-1.0,0.0),'northwest':(-.707,.707),
+                  'North':(0.0,1.0),'Northeast':(.707,.707),'East':(1.0,0.0),'Southeast':(.707,-.707),
+                  'South':(0.0,-1.0),'Southwest':(-.707,-.707),'West':(-1.0,0.0),'Northwest':(-.707,.707),
+                  'Unknown':(0.0,1.0),'Vertical':(.707,.707)}
+        
+        
+        for indx,flt in faults_clip.iterrows():
+            if(c_l['fault'] in flt[c_l['f']]):
+                fault_name='Fault_'+str(flt[c_l['o']])
+                #display(flt.geometry.type)
+                if(flt.geometry.type=='LineString'):
+                    flt_ls=LineString(flt.geometry)
                     dlsx=flt_ls.coords[0][0]-flt_ls.coords[len(flt_ls.coords)-1][0]
                     dlsy=flt_ls.coords[0][1]-flt_ls.coords[len(flt_ls.coords)-1][1]
-                    sum_strike=sum_strike+sqrt((dlsx*dlsx)+(dlsy*dlsy))  
-                    if(first):
-                        firstx=flt_ls.coords[0][0]
-                        firsty=flt_ls.coords[0][1]
-                    lastx=flt_ls.coords[0][0]
-                    lasty=flt_ls.coords[0][1]
-                ostr="{},{},{},{}\n"\
-                         .format(fault_name,sum_strike/2,sum_strike,sum_strike/4.0)    
-                #ostr=fault_name+","+str(sum_strike/2)+","+str(sum_strike)+","+str(sum_strike/4.0)+"\n"
-                fd.write(ostr) 
-                               
-                dlsx=firstx-lastx
-                dlsy=firsty-lasty
-                if(dlsx==0.0 or dlsy == 0.0):
-                        continue            
-
-                lsx=dlsx/sqrt((dlsx*dlsx)+(dlsy*dlsy))
-                lsy=dlsy/sqrt((dlsx*dlsx)+(dlsy*dlsy))        
-                azimuth=degrees(atan2(lsy,-lsx)) % 180 #normal to line segment           
-                locations=[(flt_ls.coords[int((len(afs)-1)/2)][0],flt_ls.coords[int((len(afs)-1)/2)][1])]     # should be mid-fault not mid fault segemnt but probs doesnt matter
-                height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                ostr="{},{},{},{},{},{},{},\n"\
-                         .format(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0],flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1],height,azimuth,fault_dip,1,fault_name)
-                #ostr=str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0])+","+str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1])+","+height+","+str(azimuth)+","+str(fault_dip)+",1,"+fault_name+"\n"
-                fo.write(ostr)
-
-                for pline in flt.geometry:
-                    #display(pline)
-                    #display(flt)
-                    flt_ls=LineString(pline)
-                    dlsx=flt_ls.coords[0][0]-flt_ls.coords[len(flt_ls.coords)-1][0]
-                    dlsy=flt_ls.coords[0][1]-flt_ls.coords[len(flt_ls.coords)-1][1]
-                    if(dlsx==0.0 or dlsy == 0.0):
-                        continue
-                  
-                    if(sum_strike>fault_min_len):
+                    strike=sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                    if(strike>fault_min_len):
                         i=0
                         saved=0
                         for afs in flt_ls.coords:
@@ -744,7 +628,137 @@ def save_faults(path_faults,output_path,dtm,dtb,dtb_null,cover_map,c_l,fault_dec
                                 #ostr=str(afs[0])+","+str(afs[1])+","+str(height)+","+fault_name+"\n"                            
                                 f.write(ostr)                
                             i=i+1  
-
+                        if(dlsx==0.0 or dlsy == 0.0):
+                            continue
+                        lsx=dlsx/sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                        lsy=dlsy/sqrt((dlsx*dlsx)+(dlsy*dlsy))        
+                        azimuth=degrees(atan2(lsy,-lsx)) % 180 #normal to line segment           
+                        locations=[(flt_ls.coords[int((len(afs)-1)/2)][0],flt_ls.coords[int((len(afs)-1)/2)][1])]     
+                        height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                        
+                        if(flt[c_l['o']]=='-1'):
+                            print(flt[c_l['o']],c_l['fdip'],flt[c_l['fdip']],c_l['fdipnull'],c_l['fdipest'],
+                              flt[c_l['fdipest']],c_l['fdipest_vals'])
+                        
+                        if(flt[c_l['fdip']]==c_l['fdipnull']): # null specifc dip defined
+                            if(not str(flt[c_l['fdipest']])=='None'): #  dip estimate defined
+                                i=0
+                                for choice in split:
+                                    if(flt[c_l['o']]=='-1'):
+                                        print(choice)
+                                    if(choice == flt[c_l['fdipest']]):
+                                        fault_dip=int(fault_dip_choices[i+1])
+                                        if(flt[c_l['o']]=='-1'):
+                                            print('found_dip',fault_dip)
+                                    i=i+1
+                            else:
+                                if(fault_dip == -999): # random flag
+                                    fault_dip=random.randint(60,90)
+                        else:
+                            fault_dip=int(flt[c_l['fdip']]) # specific dip defined
+                        
+                        if(c_l['fdipdir_flag']=='num'): # numeric dip direction defined
+                            azimuth=flt[c_l['fdipdir']]
+                        elif(not str(flt[c_l['fdipdir']])=='None' and not flt[c_l['fdip']]== c_l['fdipnull'] ): # alpha dip direction defined
+                            dotprod=degrees(acos((-lsx*dip_dirs[flt[c_l['fdipdir']]][0])+(lsy*dip_dirs[flt[c_l['fdipdir']]][1])))
+                            if(dotprod>45):
+                                fault_dip=-fault_dip
+    
+                            
+                        ostr="{},{},{},{},{},{},{}\n"\
+                             .format(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0],flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1],
+                                     height,azimuth,fault_dip,1,fault_name)
+                        #ostr=str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0])+","+str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1])+","+height+","+str(azimuth)+","+str(fault_dip)+",1,"+fault_name+"\n"
+                        fo.write(ostr)
+                        strike=strike*1.25
+                        ostr="{},{},{},{}\n"\
+                             .format(fault_name,strike/2,strike,strike/4.0)
+                        #ostr=fault_name+","+str(strike/2)+","+str(strike)+","+str(strike/4.0)+"\n"
+                        fd.write(ostr)
+                elif(flt.geometry.type=='MultiLineString' or flt.geometry.type=='GeometryCollection' ): #shouldn't happen any more
+                    sum_strike=0
+                    first=True
+                    for pline in flt.geometry:
+                        flt_ls=LineString(pline)
+                        dlsx=flt_ls.coords[0][0]-flt_ls.coords[len(flt_ls.coords)-1][0]
+                        dlsy=flt_ls.coords[0][1]-flt_ls.coords[len(flt_ls.coords)-1][1]
+                        sum_strike=sum_strike+sqrt((dlsx*dlsx)+(dlsy*dlsy))  
+                        if(first):
+                            firstx=flt_ls.coords[0][0]
+                            firsty=flt_ls.coords[0][1]
+                        lastx=flt_ls.coords[0][0]
+                        lasty=flt_ls.coords[0][1]
+                    ostr="{},{},{},{}\n"\
+                             .format(fault_name,sum_strike/2,sum_strike,sum_strike/4.0)    
+                    #ostr=fault_name+","+str(sum_strike/2)+","+str(sum_strike)+","+str(sum_strike/4.0)+"\n"
+                    fd.write(ostr) 
+                                   
+                    dlsx=firstx-lastx
+                    dlsy=firsty-lasty
+                    if(dlsx==0.0 or dlsy == 0.0):
+                            continue            
+    
+                    lsx=dlsx/sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                    lsy=dlsy/sqrt((dlsx*dlsx)+(dlsy*dlsy))        
+                    azimuth=degrees(atan2(lsy,-lsx)) % 180 #normal to line segment           
+                    locations=[(flt_ls.coords[int((len(afs)-1)/2)][0],flt_ls.coords[int((len(afs)-1)/2)][1])]     # should be mid-fault not mid fault segemnt but probs doesnt matter
+                    height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                    ostr="{},{},{},{},{},{},{},\n"\
+                             .format(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0],flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1],height,azimuth,fault_dip,1,fault_name)
+                    #ostr=str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0])+","+str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1])+","+height+","+str(azimuth)+","+str(fault_dip)+",1,"+fault_name+"\n"
+                    fo.write(ostr)
+    
+                    for pline in flt.geometry:
+                        #display(pline)
+                        #display(flt)
+                        flt_ls=LineString(pline)
+                        dlsx=flt_ls.coords[0][0]-flt_ls.coords[len(flt_ls.coords)-1][0]
+                        dlsy=flt_ls.coords[0][1]-flt_ls.coords[len(flt_ls.coords)-1][1]
+                        if(dlsx==0.0 or dlsy == 0.0):
+                            continue
+                      
+                        if(sum_strike>fault_min_len):
+                            i=0
+                            saved=0
+                            for afs in flt_ls.coords:
+                                if(m2l_utils.mod_safe(i,fault_decimate)==0 or i==int((len(flt_ls.coords)-1)/2) or i==len(flt_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape                         
+                                    if(saved==0):
+                                        p1x=afs[0]
+                                        p1y=afs[1]
+                                    elif(saved==1):
+                                        p2x=afs[0]
+                                        p2y=afs[1]
+                                    elif(saved==2):
+                                        p3x=afs[0]
+                                        p3y=afs[1]
+                                        # avoids narrow angles in fault traces which geomodeller refuses to solve
+                                        # should really split fault in two at apex, but life is too short
+                                        if(m2l_utils.tri_angle(p2x,p2y,p1x,p1y,p3x,p3y)<45.0): 
+                                            break
+                                    elif(saved>2):
+                                        p1x=p2x
+                                        p1y=p2y
+                                        p2x=p3x
+                                        p2y=p3y
+                                        p3x=afs[0]
+                                        p3y=afs[1]
+                                        # avoids narrow angles in fault traces which geomodeller refuses to solve
+                                        # should really split fault in two at apex, but life is too short
+                                        if(m2l_utils.tri_angle(p2x,p2y,p1x,p1y,p3x,p3y)<45.0):
+                                            break 
+                                    saved=saved+1
+                                    locations=[(afs[0],afs[1])]     
+                                    height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                    # slightly randomise first and last points to avoid awkward quadruple junctions etc.
+                                    #if(i==0 or i==len(flt_ls.coords)-1):
+                                    #    ostr=str(afs[0]+np.random.ranf())+","+str(afs[1]+np.random.ranf())+","+str(height)+","+fault_name+"\n"
+                                    #else:
+                                    ostr="{},{},{},{}\n"\
+                                         .format(afs[0],afs[1],height,fault_name)
+                                    #ostr=str(afs[0])+","+str(afs[1])+","+str(height)+","+fault_name+"\n"                            
+                                    f.write(ostr)                
+                                i=i+1  
+    
 
     f.close()
     fo.close()
@@ -2387,7 +2401,7 @@ def fault_strat_offset(path_out,c_l,dst_crs,fm_thick_file, all_sorts_file,fault_
                                   .format(midx,midy,fault[c_l['o']],'','','-1','-1')
                             #ostr=str(midx)+','+str(midy)+','+str('Fault_'+str(fault[c_l['o']]))+','+str('')+','+str('')+','+str('-1')+','+str('-1')+'\n'
                         
-                    f.write(ostr)  
+                        f.write(ostr)  
     f.close()
     print('minumim stratigraphic offsets saved as',path_out+'fault_strat_offset3.csv' )
 

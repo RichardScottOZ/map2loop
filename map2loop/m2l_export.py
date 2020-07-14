@@ -1263,7 +1263,7 @@ def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=F
 
     return random_colormap
     
-def display_LS_map(model,dtm,geol_clip,faults_clip,dst_crs,use_topo):
+def display_LS_map(model,dtm,geol_clip,faults_clip,dst_crs,use_topo,use_faults):
     
     new_cmap = rand_cmap(100, type='soft', first_color_black=False, last_color_black=False, verbose=False)
 
@@ -1281,7 +1281,7 @@ def display_LS_map(model,dtm,geol_clip,faults_clip,dst_crs,use_topo):
         zz = np.zeros_like(xx)
 
     points = np.array([xx.flatten(order='F'),yy.flatten(order='F'),zz.flatten(order='F')]).T
-    v = model.evaluate_model(model.scale(points))
+    v = model.evaluate_model(model.scale(points),scale=False)
     transform = from_origin(dtm.bounds[0], dtm.bounds[3],scale,scale)
 
     
@@ -1296,4 +1296,5 @@ def display_LS_map(model,dtm,geol_clip,faults_clip,dst_crs,use_topo):
     fig, ax = matplotlib.pyplot.subplots(figsize=(15, 15))
     rasterio.plot.show(new_dataset.read(1),transform=new_dataset.transform, cmap=new_cmap, ax=ax)
     geol_clip.plot(ax=ax, facecolor='none', edgecolor='black',linewidth=0.4)
-    faults_clip.plot(ax=ax, facecolor='none', edgecolor='red',linewidth=0.7)
+    if(use_faults):
+        faults_clip.plot(ax=ax, facecolor='none', edgecolor='red',linewidth=0.7)

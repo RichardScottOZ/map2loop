@@ -25,6 +25,7 @@ clut_path='../source_data/500kibg_colours.csv'
 
 structure_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=waroxi_wa_28350_bed&bbox='+bbox2+'&srs=EPSG:28350'
 fault_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=linear_500k&bbox='+bbox2+'&srs=EPSG:28350'
+fold_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.1.0&request=GetFeature&typeName=linear_500k&bbox='+bbox2+'&srs=EPSG:28350'
 geology_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=loop:geol_500k&bbox='+bbox2+'&srs=EPSG:28350'
 mindep_file='http://geo.loop-gis.org/geoserver/loop/wfs?service=WFS&version=1.0.0&request=GetFeature&typeName=loop:mindeps_2018_28350&bbox='+bbox2+'&srs=EPSG:28350'
 
@@ -70,6 +71,7 @@ c_l= {
 #faults and folds
   "f": 'feature',              #field that contains information on type of structure
   "fault": 'Fault',            #text to search for in field defined by f code to show that this is a fault
+  "ff": 'feature',              #field that contains information on type of structure
   "fold": 'Fold axial trace',  #text to search for in field defined by f code to show that this is a fold axial trace
   "fdip": 'dip',               # field for numeric fault dip value
   "fdipnull": '0',         # text to search for in field defined by fdip to show that this has no known dip
@@ -124,6 +126,7 @@ geology_file_csv=tmp_path+'geology_file.csv'
 mindep_file_csv=tmp_path+'mindep_file.csv'
 
 fault_file=data_path+fault_file
+fold_file=data_path+fold_file
 structure_file=data_path+structure_file
 geology_file=data_path+geology_file
 mindep_file=data_path+mindep_file

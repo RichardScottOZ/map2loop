@@ -46,9 +46,8 @@ def get_series(path_in,id_label):
 # 
 # The choice of what constitutes basic unit and what a group of units is defined in the c_l codes. Not even sure we need two levels but it seemed like a good idea at the time. Text outputs list alternate topologies for series and surfaces, which if confirmed by comapring max-min ages will be a nice source of uncertainty.
 ####################################
-def save_units(G,path_out,glabels,Australia):
+def save_units(G,path_out,glabels,Australia,asud_strat_file):
     if Australia:
-        asud_strat_file='../source_data/USAD.csv'
         ASUD=pd.read_csv(asud_strat_file,',') 
     for p in glabels: #process each group, removing nodes that are not part of that group, and other groups
         GD=G.copy() #temporary copy of full graph
@@ -111,20 +110,31 @@ def save_units(G,path_out,glabels,Australia):
         nx.draw_networkx(GD, pos=nx.kamada_kawai_layout(GD), arrows=True,with_labels=False)
         nx.draw_networkx_labels(GD,pos=nx.kamada_kawai_layout(GD), labels=labels, font_size=12,font_family='sans-serif')
         
-        nlist=list(nx.all_topological_sorts(GD)) #all possible sorted directional graphs
+        one=True
+        if(one):
+            nlist=list(nx.topological_sort(GD)) #one possible sorted directional graphs
+        else:
+            nlist=list(nx.all_topological_sorts(GD)) #all possible sorted directional graphs
+            
+        
         f = open(path_out+"/"+glabels[p].replace(" ","_").replace("-","_")+'.csv', 'w')
 
-        #print("choices:",len(nlist))
-        #f.write(str(len(nlist))+" ")
-        #f.write(str(len(GD))+"\n")
-        for m in range(len(nlist)): #process all sorted graphs
-            f.write('Choice '+str(m))
-            for n in range(0,len(GD)): #display nodes for one sorted graph
-                #print(nlist[m][n],G.nodes[nlist[m][n]]['LabelGraphics']['text'].replace(" ","_").replace("-","_"))
-                f.write(","+G.nodes[nlist[m][n]]['LabelGraphics']['text'].replace(" ","_").replace("-","_"))
-            #if(m<len(nlist)-1):
-                #print("....")
-            f.write('\n')
+        if(one):
+                f.write('Choice '+str(0))
+                for n in range(0,len(GD)): #display nodes for one sorted graph
+                   
+                    f.write(","+G.nodes[nlist[n]]['LabelGraphics']['text'].replace(" ","_").replace("-","_"))
+                
+                f.write('\n')
+        else:
+            for m in range(10): #process first ten sorted graphs
+                f.write('Choice '+str(m))
+                for n in range(0,len(GD)): #display nodes for one sorted graph
+                    #print(nlist[m][n],G.nodes[nlist[m][n]]['LabelGraphics']['text'].replace(" ","_").replace("-","_"))
+                    f.write(","+G.nodes[nlist[m][n]]['LabelGraphics']['text'].replace(" ","_").replace("-","_"))
+                #if(m<len(nlist)-1):
+                    #print("....")
+                f.write('\n')
         f.close()
 
 
@@ -213,7 +223,7 @@ def save_group(G,path_out,glabels,geol,c_l):
     nlist=list(G.nodes)
     for n in nlist: # Find out total number of groups and their names groups
         if('isGroup' in G.nodes[n]):
-            G.add_nodes_from([n])
+            Gp.add_nodes_from([n])
     
     display(gp_ids)
     for e in G.edges:
@@ -245,8 +255,9 @@ def save_group(G,path_out,glabels,geol,c_l):
     display(glabels)
     plt.figure(1) #display strat graph for one group
     plt.title("groups")
-    nx.draw_networkx(Gp, pos=nx.kamada_kawai_layout(Gp), arrows=True,with_labels=False)
-    nx.draw_networkx_labels(Gp,pos=nx.kamada_kawai_layout(Gp),  font_size=12,font_family='sans-serif')
+    if(len(glabels)>1):
+        nx.draw_networkx(Gp, pos=nx.kamada_kawai_layout(Gp), arrows=True,with_labels=False)
+        nx.draw_networkx_labels(Gp,pos=nx.kamada_kawai_layout(Gp),  font_size=12,font_family='sans-serif')
 
     if(len(gp_ages)>10): # when lots of groups very large number of possibilities so short cut to first choice.
         glist=list(nx.topological_sort(Gp)) #all possible sorted directional graphs    

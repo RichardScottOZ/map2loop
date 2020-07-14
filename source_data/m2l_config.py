@@ -20,6 +20,7 @@ clut_path='../source_data/500kibg_colours.csv'
 
 geology_file='hams2_geol.shp'   #input geology file (if local)
 fault_file='GEOS_GEOLOGY_LINEARSTRUCTURE_500K_GSD.shp' #input fault file (if local)
+fold_file='GEOS_GEOLOGY_LINEARSTRUCTURE_500K_GSD.shp' #input fold file (if local)
 structure_file='hams2_structure.shp' #input bedding orientation file (if local)
 mindep_file='mindeps_2018.shp' #input mineral deposit file (if local)
 
@@ -62,6 +63,7 @@ c_l= {
 #faults and folds
   "f": 'FEATURE',              #field that contains information on type of structure
   "fault": 'Fault',            #text to search for in field defined by f code to show that this is a fault
+  "ff": 'FEATURE',              #field that contains information on type of structure
   "fold": 'Fold axial trace',  #text to search for in field defined by f code to show that this is a fold axial trace
   "fdip": 'DIP',               # field for numeric fault dip value
   "fdipnull": '0',         # text to search for in field defined by fdip to show that this has no known dip
@@ -116,6 +118,7 @@ geology_file_csv=tmp_path+geology_file.replace(".shp",".csv")
 mindep_file_csv=tmp_path+mindep_file.replace(".shp",".csv")
 
 fault_file=data_path+fault_file
+fold_file=data_path+fold_file
 structure_file=data_path+structure_file
 geology_file=data_path+geology_file
 mindep_file=data_path+mindep_file

@@ -22,6 +22,10 @@ Loop is led by Laurent Ailleres (Monash University) with a team of Work Package 
    
 <a href="https://github.com/Loop3D/map2loop/blob/master/m2l_LS_install.md">Install Instructions</a>
 
+### or you can try before you buy with Binder:   
+   
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Loop3D/map2loop/master?filepath=notebooks%2F)   
+   
 ## Problems
 Any bugs/feature requests/comments please create a new [issue](https://github.com/Loop3D/map2loop/issues). 
 
