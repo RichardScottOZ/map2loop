@@ -850,7 +850,7 @@ def save_fold_axial_traces(path_folds,path_fold_orientations,dtm,dtb,dtb_null,co
 
                 i=0
                 for afs in fold_ls.coords:
-                    if(c_l['fold'] in fold[c_l['f']]):
+                    if(c_l['fold'] in fold[c_l['ff']]):
                         if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
                             locations=[(afs[0],afs[1])]     
                             height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
@@ -864,7 +864,7 @@ def save_fold_axial_traces(path_folds,path_fold_orientations,dtm,dtb,dtb_null,co
 
             i=0
             for afs in fold_ls.coords:
-                if(c_l['fold'] in fold[c_l['f']]):
+                if(c_l['fold'] in fold[c_l['ff']]):
                     if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
                         locations=[(afs[0],afs[1])]     
                         height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
@@ -1915,7 +1915,7 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                 i=0
                 first=True
                 for afs in fold_ls.coords:
-                    if(c_l['fold'] in fold[c_l['f']]):
+                    if(c_l['fold'] in fold[c_l['ff']]):
                         # save out current geometry of FAT
                         if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
                             locations=[(afs[0],afs[1])]                  
@@ -1983,7 +1983,7 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
             i=0
             first=True
             for afs in fold_ls.coords:
-                if(c_l['fold'] in fold[c_l['f']]):
+                if(c_l['fold'] in fold[c_l['ff']]):
                     # save out current geometry of FAT
                     if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
                         locations=[(afs[0],afs[1])]                  
