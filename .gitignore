@@ -153,5 +153,6 @@ scratch/*
 QLD/*
 SA/*
 NSW/*
+Test/*
 map2loop/.vscode/launch.json
 map2loop/.vscode/settings.json
