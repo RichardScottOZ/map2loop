@@ -1871,3 +1871,20 @@ def process_fault_throw_and_near_faults_from_grid(tmp_path,output_path,dtm_repro
     print('fault displacement estimates saved as',output_path+'fault_displacements3.csv')
     print('near-fault orientations saved as',tmp_path+'ex_f_combo_full.csv')
     print('near-fault orientations saved as',tmp_path+'ex_f_combo_full.csv')  
+    
+    # when no fault displacment data are available, set to 1m displacment so they still are calculated
+    
+    if(os.path.exists(fault_file)):
+        fault_ori=pd.read_csv(output_path+'fault_orientations.csv')
+        fault_disp=pd.read_csv(output_path+'fault_displacements3.csv')
+        
+        fault_disp_found=fault_disp['fname'].unique()
+        
+        f=open(output_path+'fault_displacements3.csv','a')
+        
+        for ind,fault in fault_ori.iterrows():
+            if(not fault['formation'] in fault_disp_found):
+                ostr=str(fault['X'])+','+str(fault['Y'])+','+str(fault['formation'])+','+str(1)+','+str(1)+','+str(1)+'\n'
+                f.write(ostr)
+    
+        f.close()

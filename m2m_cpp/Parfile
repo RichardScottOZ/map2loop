@@ -1,21 +1,21 @@
 --- COLUMN NAMES IN CSV DATA FILES: -------------------------------------------------------------
 OBJECT COORDINATES              =WKT
-FAULT: ID                       =unique_id
-FAULT: FEATURE                  =boundaryty
-POLYGON: ID                     =unique_id
-POLYGON: LEVEL1 NAME            =nsw_code
-POLYGON: LEVEL2 NAME            =sub_provin
-POLYGON: MIN AGE                =top_end_ag
-POLYGON: MAX AGE                =base_start
-POLYGON: CODE                   =unit_name
-POLYGON: DESCRIPTION            =deposition
-POLYGON: ROCKTYPE1              =class
-POLYGON: ROCKTYPE2              =igneous_ty
-DEPOSIT: SITE CODE              =occurrence
-DEPOSIT: SITE TYPE              =comm_type
-DEPOSIT: SITE COMMODITY         =ore_min
+FAULT: ID                       =OBJECTID
+FAULT: FEATURE                  =FEATURE
+POLYGON: ID                     =OBJECTID
+POLYGON: LEVEL1 NAME            =CODE
+POLYGON: LEVEL2 NAME            =GROUP_
+POLYGON: MIN AGE                =MIN_AGE_MA
+POLYGON: MAX AGE                =MAX_AGE_MA
+POLYGON: CODE                   =UNITNAME
+POLYGON: DESCRIPTION            =DESCRIPTN
+POLYGON: ROCKTYPE1              =ROCKTYPE1
+POLYGON: ROCKTYPE2              =ROCKTYPE2
+DEPOSIT: SITE CODE              =SITE_CODE
+DEPOSIT: SITE TYPE              =SITE_TYPE_
+DEPOSIT: SITE COMMODITY         =SITE_COMMO
 --- SOME CONSTANTS: ----------------------------------------------------------------------------
-FAULT AXIAL FEATURE NAME        =cline
+FAULT AXIAL FEATURE NAME        =Fold axial trace
 SILL UNIT DESCRIPTION CONTAINS  =sill
 IGNEOUS ROCKTYPE CONTAINS                           =intrusive
 VOLCANIC ROCKTYPE CONTAINS                          =volcanic
@@ -26,12 +26,12 @@ Distance buffer (fault stops on another fault) (m)  =20.0
 Distance buffer (point on contact) (m)              =500.0
 Intersect polygons distance buffer (for bad maps)   =3.
 ------------------------------------------------------------------------------------------------
-Path to the output data folder                      =../NSW/graph/
-Path to geology data file                           =../NSW/tmp/geology_file.csv
-Path to faults data file                            =../NSW/tmp/fault_file.csv
-Path to mineral deposits data file                  =../NSW/tmp/mindep_file.csv
+Path to the output data folder                      =../Turner_Syncline/graph/
+Path to geology data file                           =../Turner_Syncline/tmp/hams2_geol.csv
+Path to faults data file                            =../Turner_Syncline/tmp/GEOS_GEOLOGY_LINEARSTRUCTURE_500K_GSD.csv
+Path to mineral deposits data file                  =../Turner_Syncline/tmp/mindeps_2018.csv
 ------------------------------------------------------------------------------------------------
-Clipping window X1 Y1 X2 Y2 (zeros for infinite)    =707869.6088261463 6333111.349122148 751160.3109306017 6362723.630834261
+Clipping window X1 Y1 X2 Y2 (zeros for infinite)    =500000 7490000 545000 7520000
 Min length fraction for strat/fault graphs          =0.0
 Graph edge width categories (three doubles)         =2000. 20000. 200000.
 Graph edge direction (0-min age, 1-max age, 2-avg)  =2
