@@ -29,7 +29,7 @@ pip install lavavu
 conda install -c conda-forge folium -y   
 conda install -c anaconda scikit-learn -y   
 conda install -c conda-forge scikit-image -y   
-pip install ipyfilechooser
+pip install ipyfilechooser   
 conda install -c conda-forge folium
    
 ### 4)  Navigate to where you want to store your files: 
