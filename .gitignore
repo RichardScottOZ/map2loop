@@ -148,11 +148,11 @@ qld_src_data/output/*
 qld_src_data/dtm/*
 qld_src_data/graph/*
 qld_src_data/vtk/*
-qld_src_data/qld_src_data*
+qld_src_data/data*
 scratch/*
 QLD/*
 SA/*
-NSW/*
+NSW/data/*
 Test/*
 map2loop/.vscode/launch.json
 map2loop/.vscode/settings.json
