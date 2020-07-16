@@ -56,7 +56,7 @@ git clone http:<span></span>//github.com/Loop3D/map2loop.git
    
 ##### In the console type
    
-pip install LoopStructural-1.0.1-cp37-cp37m-win_amd64.whl   
+pip install LoopStructural-1.0.3-cp37-cp37m-win_amd64.whl   
 cd map2loop   
 python setup.py install --user   
     
