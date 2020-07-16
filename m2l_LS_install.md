@@ -1,4 +1,4 @@
-### 1) Start up an Anaconda console window  If you created an environment called loop last time, delete it to start again, otherwise ignore this step
+### 1) Download and install <a href="https://www.anaconda.com/products/individual" target=_blank>Anaconda (Python 3.7)</a> and after installation, start up an Anaconda console window  If you created an environment called loop last time, delete it to start again, otherwise ignore this step
    
 conda env remove --name loop
    
