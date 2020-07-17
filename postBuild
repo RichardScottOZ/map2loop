@@ -13,5 +13,7 @@ make
 cp map2model ../../m2m_cpp/map2model
 
 
-rm -f /tmp/.X99-lock && xvfb-run -s '-screen 0 1600x1200x16' \$@" >> /usr/local/bin/xvfbrun.sh && \
-    chmod +x /usr/local/bin/xvfbrun.sh
+rm -f /tmp/.X99-lock 
+xvfb-run -s '-screen 0 1600x1200x16' \$@ >> /usr/local/bin/xvfbrun.sh
+chmod +x /usr/local/bin/xvfbrun.sh
+/usr/local/bin/xvfbrun.sh
