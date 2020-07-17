@@ -12,8 +12,6 @@ cmake ..
 make
 cp map2model ../../m2m_cpp/map2model
 
-export DISPLAY=:99.0
-which Xvfb
-Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-sleep 3
-exec "$@"
+
+rm -f /tmp/.X99-lock && xvfb-run -s '-screen 0 1600x1200x16' \$@" >> /usr/local/bin/xvfbrun.sh && \
+    chmod +x /usr/local/bin/xvfbrun.sh
