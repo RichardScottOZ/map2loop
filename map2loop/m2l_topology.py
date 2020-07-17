@@ -242,8 +242,9 @@ def save_group(G,path_out,glabels,geol,c_l):
                 grp1=geology_file.loc[glabel_1][c_l['g']].replace(" ","_").replace("-","_")
                 
             #print(glabel_0,glabel_1,gp_ages.loc[grp0],gp_ages.loc[grp1])
-            if(gp_ages.loc[grp0]['ave']<gp_ages.loc[grp1]['ave']):
-                Gp.add_edge(G.nodes[e[0]]['gid'],G.nodes[e[1]]['gid'])
+            if(grp0 in glabels and grp1 in glabels):    
+                if(gp_ages.loc[grp0]['ave']<gp_ages.loc[grp1]['ave']):
+                    Gp.add_edge(G.nodes[e[0]]['gid'],G.nodes[e[1]]['gid'])
     
     GpD=Gp.copy() #temporary copy of full graph
     GpD2=Gp.copy() #temporary copy of full graph

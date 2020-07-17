@@ -303,7 +303,7 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_p
     if (os.path.isfile(fold_file) or not local_paths):
         folds = gpd.read_file(fold_file,bbox=bbox)
         if(len(folds)>0):
-            if not c_l['o'] in geology.columns:
+            if not c_l['o'] in folds.columns:
                 folds = folds.reset_index()
                 folds[c_l['o']]=folds.index
             unique_g=set(folds[c_l['o']])
