@@ -277,7 +277,10 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_p
         if(not len(unique_g) == len(geology)):
             m2l_warnings.append('duplicate geology polygon unique IDs')
     
-        
+        nans=geology[c_l['c']].isnull().sum() 
+        if(nans>0):
+             m2l_errors.append(''+str(nans)+' NaN/blank found in column "'+str(c_l['c'])+'" of geology file, please fix')
+                    
         geology = geology.replace(r'^\s+$', np.nan, regex=True)
         geology[c_l['g']].fillna(geology[c_l['g2']], inplace=True)
         geology[c_l['g']].fillna(geology[c_l['c']], inplace=True)
@@ -412,7 +415,7 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_p
     if(len(m2l_errors)==0):
         print('\nNo errors found, clipped and updated files saved to tmp')
         
-        if(len(folds)>0):
+        if(len(folds_clip)>0):
             fold_file=tmp_path+'folds_clip.shp'
             folds_clip.to_file(fold_file)         
         else:
