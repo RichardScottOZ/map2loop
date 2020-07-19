@@ -1933,14 +1933,12 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                 midyr=midy+(fat_step*l)
                                 midxl=midx-(fat_step*-m)
                                 midyl=midy-(fat_step*l)
+                                r=int((midy-bbox[1])/spacing)
+                                c=int((midx-bbox[0])/spacing)
                                 if(close_dip==-999):
-                                    r=int((midy-bbox[1])/spacing)
-                                    c=int((midx-bbox[0])/spacing)
                                     dip=dip_grid[r,c]
                                 else:
                                     dip=close_dip
-                                r=int((midy-bbox[1])/spacing)
-                                c=int((midx-bbox[0])/spacing)
                                 dip_dir=dip_dir_grid[r,c]
                                 
                                 dip2,dipdir2=m2l_utils.dircos2ddd(-m,l,cos(radians(dip)))
@@ -2001,9 +1999,9 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                             midyr=midy+(fat_step*l)
                             midxl=midx-(fat_step*-m)
                             midyl=midy-(fat_step*l)
+                            r=int((midy-bbox[1])/spacing)
+                            c=int((midx-bbox[0])/spacing)
                             if(close_dip==-999):
-                                r=int((midy-bbox[1])/spacing)
-                                c=int((midx-bbox[0])/spacing)
                                 dip=dip_grid[r,c]
                             else:
                                 dip=close_dip
