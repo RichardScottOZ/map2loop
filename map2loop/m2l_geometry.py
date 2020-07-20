@@ -2628,7 +2628,7 @@ def save_basal_contacts_orientations_csv(contacts,orientations,geol_clip,tmp_pat
                             midy=lasty+((line.coords[0][1]-lasty)/2)
                             lastx=line.coords[0][0]
                             lasty=line.coords[0][1]
-                            
+
                             if(first_in_line):
                                 found_code=''
                                 for indx,apoly in geol_clip.iterrows():
@@ -2651,15 +2651,18 @@ def save_basal_contacts_orientations_csv(contacts,orientations,geol_clip,tmp_pat
                             
                             height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
                             if(contact_dip==-999):
+                                
                                 r=int((midy-bbox[1])/spacing)
                                 c=int((midx-bbox[0])/spacing)
                                 dip=dip_grid[r,c]
                             else:
                                 dip=contact_dip
-                            ostr="{},{},{},{},{},{},{}\n"\
+                            if(dip!=-999):
+                                ostr="{},{},{},{},{},{},{}\n"\
                                   .format(midx,midy,height,dipdir,str(dip),'1',str(contact[c_l['c']]).replace(" ","_").replace("-","_"))
-                            #ostr=str(midx)+','+str(midy)+','+str(height)+','+str(dipdir)+','+str(contact_dip)+',1,'+str(contact[c_l['c']]).replace(" ","_").replace("-","_")+'\n'
-                            f.write(ostr)
+                                #ostr=str(midx)+','+str(midy)+','+str(height)+','+str(dipdir)+','+str(contact_dip)+',1,'+str(contact[c_l['c']]).replace(" ","_").replace("-","_")+'\n'
+                                f.write(ostr)
+                            
                     else:
                         lastx=line.coords[0][0]
                         lasty=line.coords[0][1]
