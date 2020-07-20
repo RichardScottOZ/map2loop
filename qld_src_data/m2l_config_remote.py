@@ -48,10 +48,10 @@ c_l= {
   "c": 'Stratigrap',                 #field that contains finer stratigraphic coding
   "ds": 'ROCK_TYPE',           #field that contains information about lithology
   "u": 'RU_NAME',             #field that contains alternate stratigraphic coding (not used??)
-  "r1": 'LITH_SUMM',           #field that contains  extra lithology information
+  "r1": 'Intrusive',           #field that contains  extra lithology information
   "r2": 'LITH_SUMM',           #field that contains even more lithology information
   "sill": 'sill',              #text to search for in field defined by ds code to show that this is a sill
-  "intrusive": 'INTRUSIVE',    #text to search for in field defined by ds code to show that this is an intrusion
+  "intrusive": 'Y',    #text to search for in field defined by r1 code to show that this is an intrusion
   "volcanic": 'VOLCANIC',      #text to search for in field defined by ds code to show that this is an volv=canic (not intrusion)
 #Mineral Deposits
   "msc": 'site_no',          #field that contains site code of deposit
