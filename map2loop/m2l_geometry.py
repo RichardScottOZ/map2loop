@@ -37,27 +37,28 @@ def save_orientations(structures,path_out,c_l,orientation_decimate,dtm,dtb,dtb_n
     f.write("X,Y,Z,azimuth,dip,polarity,formation\n")
     for indx,apoint in structures.iterrows():
         if(not str(apoint[c_l['r1']])=='None'):
+            if(not str(apoint[c_l['r1']])=='nan'):
 
-            if(not c_l['intrusive'] in apoint[c_l['r1']]):
-                if(apoint[c_l['d']]!=0 and m2l_utils.mod_safe(i,orientation_decimate)==0):
-                    locations=[(apoint['geometry'].x, apoint['geometry'].y)]
-                    if(apoint['geometry'].x > dtm.bounds[0] and apoint['geometry'].x < dtm.bounds[2] and  
-                        apoint['geometry'].y > dtm.bounds[1] and apoint['geometry'].y < dtm.bounds[3]):       
-                        height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                        if(c_l['otype']=='strike'):
-                            dipdir=apoint[c_l['dd']]+90
-                        else:
-                            dipdir=apoint[c_l['dd']]
-                        if(apoint[c_l['bo']]==c_l['btype']):
-                            polarity=0
-                        else:
-                            polarity=1
-                        ostr="{},{},{},{},{},{},{}\n"\
-                            .format(apoint['geometry'].x,apoint['geometry'].y,height,dipdir,apoint[c_l['d']],
-                                    polarity,apoint[c_l['c']].replace(" ","_").replace("-","_"))   
-                        #ostr=str(apoint['geometry'].x)+","+str(apoint['geometry'].y)+","+height+","+str(dipdir)+","+str(apoint[c_l['d']])+",1,"+str(apoint[c_l['c']].replace(" ","_").replace("-","_"))+"\n"
-                        f.write(ostr)
-                i=i+1
+                if(not c_l['intrusive'] in apoint[c_l['r1']]):
+                    if(apoint[c_l['d']]!=0 and m2l_utils.mod_safe(i,orientation_decimate)==0):
+                        locations=[(apoint['geometry'].x, apoint['geometry'].y)]
+                        if(apoint['geometry'].x > dtm.bounds[0] and apoint['geometry'].x < dtm.bounds[2] and  
+                            apoint['geometry'].y > dtm.bounds[1] and apoint['geometry'].y < dtm.bounds[3]):       
+                            height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                            if(c_l['otype']=='strike'):
+                                dipdir=apoint[c_l['dd']]+90
+                            else:
+                                dipdir=apoint[c_l['dd']]
+                            if(apoint[c_l['bo']]==c_l['btype']):
+                                polarity=0
+                            else:
+                                polarity=1
+                            ostr="{},{},{},{},{},{},{}\n"\
+                                .format(apoint['geometry'].x,apoint['geometry'].y,height,dipdir,apoint[c_l['d']],
+                                        polarity,apoint[c_l['c']].replace(" ","_").replace("-","_"))   
+                            #ostr=str(apoint['geometry'].x)+","+str(apoint['geometry'].y)+","+height+","+str(dipdir)+","+str(apoint[c_l['d']])+",1,"+str(apoint[c_l['c']].replace(" ","_").replace("-","_"))+"\n"
+                            f.write(ostr)
+                    i=i+1
             
     f.close()
     print(i,'orientations saved to',path_out+'orientations.csv')
