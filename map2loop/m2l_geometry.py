@@ -1401,7 +1401,7 @@ def tidy_data(output_path,tmp_path,clut_path,use_group,use_interpolations,use_fa
             #ostr=str(a_sort[1]['index'])+","+str(a_sort[1]['group number'])+","+str(a_sort[1]['index in group'])+","+str(a_sort[1]['number in group'])+","+a_sort[0]+","+a_sort[1]['group']+",erode\n"
             fas.write(ostr)
     fas.close()
-
+    
     # Update orientation info
 
     fao=open(output_path+'orientations_clean.csv',"w")
@@ -1444,6 +1444,22 @@ def tidy_data(output_path,tmp_path,clut_path,use_group,use_interpolations,use_fa
                     newdx=newdx+1
             gpdx=gpdx+1
     fas.close()
+    
+    #add missing formation thickness estimates
+    sum_thick=pd.read_csv(output_path+'formation_summary_thicknesses.csv')
+    all_sorts=pd.read_csv(tmp_path+'all_sorts_clean.csv')
+    found_codes=sum_thick['formation'].unique()
+    median_th=sum_thick['thickness median'].median()
+    fs=open(output_path+'formation_summary_thicknesses.csv','a+')
+    
+    for ind,a_s in all_sorts.iterrows():
+        if(not a_s['code'] in found_codes):
+            print("Guessing formation thickness of",a_s['code'],"as",median_th)
+            ostr="{},{},{},{}\n"\
+               .format(a_s['code'],median_th,'nan',"guess")
+            fs.write(ostr)
+    fs.close()
+           
     
     #add colours (hardwired to GSWA or the moment
     if(clut_path ==''):
