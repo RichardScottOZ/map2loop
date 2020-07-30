@@ -45,7 +45,18 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_p
     # Process orientation points
     
     if (os.path.isfile(structure_file) or not local_paths):
-        orientations = gpd.read_file(structure_file,bbox=bbox)
+        orientations2 = gpd.read_file(structure_file,bbox=bbox)
+        if(c_l['sf']==c_l['ds']):
+            new_code='NEW_'+c_l['sf']
+            new_code=new_code[:10]
+            orientations=orientations2.rename(columns={c_l['sf']:new_code}, errors="raise")
+            m2l_warnings.append('To avoid conflict with geology field of same name, orientation field named "'+str(c_l['sf'])+'" renamed to "'+new_code+'"')    
+            c_l['sf']=new_code
+        else:
+            new_code=''
+            orientations=orientations2.copy()
+        if(c_l['bo']==c_l['ds'] and not new_code==''):
+            c_l['bo']=new_code
         
         if(len(orientations)<2):
             m2l_errors.append('not enough orientations to complete calculations (need at least 2)')

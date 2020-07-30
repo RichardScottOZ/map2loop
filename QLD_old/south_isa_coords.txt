@@ -1,0 +1,16 @@
+Hi Mark
+Here are the coordinates of the area:
+https://qdexdata.dnrme.qld.gov.au/gdp/search
+Min Longitude: 139.130
+Max longitude: 140.119
+Min latitude: -23.417
+Max latitude: -22.6861
+which I translated from 7490000 N to 7410000 N 
+and E 310000 to E 410000
+May I know which package do you recommend for creating the geological model of the area 
+(Geomodeller, map2loop, GemPy or ...)?Or can we discuss it when you have time?
+
+Regards
+Mahtab 
+
+
