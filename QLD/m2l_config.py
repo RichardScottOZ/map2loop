@@ -53,7 +53,7 @@ c_l= {
   "r1": 'LITH_SUMM',           #field that contains  extra lithology information
   "r2": 'LITH_SUMM',           #field that contains even more lithology information
   "sill": 'sill',              #text to search for in field defined by ds code to show that this is a sill
-  "intrusive": 'INTRUSIVE',    #text to search for in field defined by ds code to show that this is an intrusion
+  "intrusive": 'INTRUSIVE',    #text to search for in field defined by r1 code to show that this is an intrusion
   "volcanic": 'VOLCANIC',      #text to search for in field defined by ds code to show that this is an volv=canic (not intrusion)
 #Mineral Deposits
   "msc": 'SITE_NO',          #field that contains site code of deposit

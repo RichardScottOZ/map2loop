@@ -41,9 +41,9 @@ c_l= {
   "u": 'unitname',             #field that contains alternate stratigraphic coding (not used??)
   "r1": 'rocktype1',           #field that contains  extra lithology information
   "r2": 'rocktype2',           #field that contains even more lithology information
-  "sill": 'sill',              #text to search for in field defined by dscode to show that this is a sill
-  "intrusive": 'intrusive',    #text to search for in field defined by dscode to show that this is an intrusion
-  "volcanic": 'volcanic',      #text to search for in field defined by dscode to show that this is an intrusion
+  "sill": 'sill',              #text to search for in field defined by ds code to show that this is a sill
+  "intrusive": 'intrusive',    #text to search for in field defined by r1 code to show that this is an intrusion
+  "volcanic": 'volcanic',      #text to search for in field defined by ds code to show that this is  volcanic
 #Timing
   "min": 'min_age_ma',         #field that contains minimum age of unit defined by ccode
   "max": 'max_age_ma',         #field that contains maximum age of unit defined by ccode

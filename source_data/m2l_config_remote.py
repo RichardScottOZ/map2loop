@@ -17,7 +17,8 @@ local_paths=False       #flag to use local or WFS source for data inputs (True =
 
 
 data_path=''
-clut_path='../source_data/500kibg_colours.csv'
+#clut_path='../source_data/500kibg_colours.csv'
+clut_path=''
 #geology_file='hams2_geol.shp'   #input geology file (if local)
 #fault_file='GEOS_GEOLOGY_LINEARSTRUCTURE_500K_GSD.shp' #input fault file (if local)
 #structure_file='hams2_structure.shp' #input bedding orientation file (if local)
@@ -49,13 +50,13 @@ c_l= {
 #stratigraphy
   "g": 'group_',               #field that contains coarser stratigraphic coding
   "g2": 'supersuite',              #field that contains alternate coarser stratigraphic coding if 'g' is blank
-  "c": 'code',                 #field that contains finer stratigraphic coding
+  "c": 'unitname',                 #field that contains finer stratigraphic coding
   "ds": 'descriptn',           #field that contains information about lithology
-  "u": 'unitname',             #field that contains alternate stratigraphic coding (not used??)
+  "u": 'code',             #field that contains alternate stratigraphic coding (not used??)
   "r1": 'rocktype1',           #field that contains  extra lithology information
   "r2": 'rocktype2',           #field that contains even more lithology information
   "sill": 'sill',              #text to search for in field defined by ds code to show that this is a sill
-  "intrusive": 'intrusive',    #text to search for in field defined by ds code to show that this is an intrusion
+  "intrusive": 'intrusive',    #text to search for in field defined by r1 code to show that this is an intrusion
   "volcanic": 'volcanic',      #text to search for in field defined by ds code to show that this is an volv=canic (not intrusion)
 #mineral deposits
   "msc": 'site_code',          #field that contains site code of deposit

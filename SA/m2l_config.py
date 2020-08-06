@@ -20,10 +20,10 @@ data_path=''
 clut_path=''
 base_url='https://gs-seamless.geoscience.nsw.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetFeature&typeName='
 
-structure_file='../SA/data/outcrops/sth_flinders_28354.shp'
-fault_file='../SA/data/2M Linear Structures_shp/2M Linear Structures_28354.shp'
-fold_file='../SA/data/2M Linear Structures_shp/2M Linear Structures_28354.shp'
-geology_file='../SA/data/2M Surface Geology_shp/2M Surface Geology_28354.shp'
+structure_file='../SA/data/sth_flinders_28354.shp'
+fault_file='../SA/data/2M Linear Structures_28354.shp'
+fold_file='../SA/data/2M Linear Structures_28354.shp'
+geology_file='../SA/data/2M_Surface_Geology_28354.shp'
 mindep_file='../source_data/null_mindeps.shp'
 
 #CRS

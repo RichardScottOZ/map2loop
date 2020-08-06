@@ -47,7 +47,7 @@ c_l= {
   "r1": 'ROCKTYPE1',           #field that contains  extra lithology information
   "r2": 'ROCKTYPE2',           #field that contains even more lithology information
   "sill": 'sill',              #text to search for in field defined by ds code to show that this is a sill
-  "intrusive": 'intrusive',    #text to search for in field defined by ds code to show that this is an intrusion
+  "intrusive": 'intrusive',    #text to search for in field defined by r1 code to show that this is an intrusion
   "volcanic": 'volcanic',      #text to search for in field defined by ds code to show that this is an volv=canic (not intrusion)
 #Mineral Deposits
   "msc": 'SITE_CODE',          #field that contains site code of deposit

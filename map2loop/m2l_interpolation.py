@@ -64,7 +64,7 @@ def scipy_idw(x, y, z, xi, yi):
 # sci_py version of Radial Basis Function interpolation of observations z at x,y locations returned at locations defined by xi,yi arraysplot(x,y,z,grid)
 ######################################
 def scipy_rbf(x, y, z, xi, yi):
-    interp = Rbf(x, y, z,smooth=.15)
+    interp = Rbf(x, y, z,function='multiquadric',smooth=.15)
     return interp(xi, yi)
 
 ######################################
@@ -1362,7 +1362,8 @@ def interpolate_contacts_grid(contacts,calc,xcoords_group,ycoords_group):
     scale=np.sqrt(dx2+dy2)
     l=dx/scale
     m=dy/scale
-    
+    #m=np.where(l<0, -m, m)
+    #l=np.where(l<0, -l, l)
     
     if(len(x)>2):
         ZIl,ZIm,ZIn=call_interpolator_grid(calc,x,y,l,m,0,xcoords_group,ycoords_group)

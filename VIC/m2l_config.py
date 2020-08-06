@@ -20,11 +20,11 @@ data_path=''
 clut_path=''
 base_url='https://gs-seamless.geoscience.nsw.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetFeature&typeName='
 
-structure_file='C:/Users/00073294/Dropbox/1_Jupyter_notebooks/map2loop/VIC/data/struc_28355.shp'
-fault_file='C:/Users/00073294/Dropbox/1_Jupyter_notebooks/map2loop/VIC/data/GeolStructure_250K_ln_28355.shp'
-fold_file='C:/Users/00073294/Dropbox/1_Jupyter_notebooks/map2loop/VIC/data/GeolStructure_250K_ln_28355.shp'
-geology_file='C:/Users/00073294/Dropbox/1_Jupyter_notebooks/map2loop/VIC/data/GeolUnit_250k_py_28355.shp'
-mindep_file='../source_data//null_mindeps.shp'
+structure_file='../VIC/data/struc_28355.shp'
+fault_file='../VIC/data/GeolStructure_250K_ln_28355.shp'
+fold_file='../VIC/data/GeolStructure_250K_ln_28355.shp'
+geology_file='../VIC/data/GeolUnit_250k_py_28355.shp'
+mindep_file='../source_data/null_mindeps.shp'
 
 #CRS
 
