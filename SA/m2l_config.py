@@ -23,7 +23,7 @@ base_url='https://gs-seamless.geoscience.nsw.gov.au/geoserver/ows?service=wfs&ve
 structure_file='../SA/data/sth_flinders_28354.shp'
 fault_file='../SA/data/2M Linear Structures_28354.shp'
 fold_file='../SA/data/2M Linear Structures_28354.shp'
-geology_file='../SA/data/2M_Surface_Geology_28354.shp'
+geology_file='../SA/data/2M_Surface_Geology_28354_relage.shp'
 mindep_file='../source_data/null_mindeps.shp'
 
 #CRS
@@ -57,8 +57,8 @@ c_l={'d': 'INCLINATIO',
  'mscm': 'SITE_COMMO',
  'mcom': 'TARGET_COM',
  'minf': 'Cons',
- 'min': 'No_col',
- 'max': 'No_col',
+ 'min': 'RELAGE',
+ 'max': 'RELAGE',
  'f': 'DESCRIPTIO',
  'fault': 'Fault',
  'ff': 'DESCRIPTIO',
