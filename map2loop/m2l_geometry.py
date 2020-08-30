@@ -1479,7 +1479,8 @@ def tidy_data(output_path,tmp_path,clut_path,use_group,use_interpolations,use_fa
         if( c_l['c']=='CODE'):
             code=c_l['c'].lower()
         else:
-            code=c_l['c']
+            code='UNITNAME'
+            #code=c_l['c']
             
         asc2=pd.merge(asc, colours, how='inner',  left_on='code', right_on=code)
         asc2.drop(['UNITNAME'], axis=1,inplace=True)

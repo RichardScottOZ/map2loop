@@ -1,0 +1,17 @@
+1 Cb-Bf-l-u
+0 Cb-Bf-u-B
+10 CmOd-SP
+3 Dv-Pa
+2 DvCb-EBf-l-lm
+8 Od-Sk
+9 Od-Tp
+
+0 3 0
+0 8 0
+0 9 0
+0 10 0
+1 9 0
+1 10 0
+2 3 0
+2 10 0
+3 8 0

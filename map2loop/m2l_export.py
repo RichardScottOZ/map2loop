@@ -1263,9 +1263,10 @@ def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=F
 
     return random_colormap
     
-def display_LS_map(model,dtm,geol_clip,faults_clip,dst_crs,use_topo,use_faults):
+def display_LS_map(model,dtm,geol_clip,faults_clip,dst_crs,use_cmap,cmap,use_topo,use_faults):
     
-    new_cmap = rand_cmap(100, type='soft', first_color_black=False, last_color_black=False, verbose=False)
+    if(not use_cmap):
+        cmap = rand_cmap(100, type='soft', first_color_black=False, last_color_black=False, verbose=False)
 
     dtm_val = dtm.read(1)
 
@@ -1294,7 +1295,7 @@ def display_LS_map(model,dtm,geol_clip,faults_clip,dst_crs,use_topo,use_faults):
     new_dataset.write(v.astype('float64').reshape(dtm_val.shape[0],dtm_val.shape[1]), 1)
     
     fig, ax = matplotlib.pyplot.subplots(figsize=(15, 15))
-    rasterio.plot.show(new_dataset.read(1),transform=new_dataset.transform, cmap=new_cmap, ax=ax)
+    rasterio.plot.show(new_dataset.read(1),transform=new_dataset.transform, cmap=cmap, ax=ax)
     geol_clip.plot(ax=ax, facecolor='none', edgecolor='black',linewidth=0.4)
     if(use_faults):
         faults_clip.plot(ax=ax, facecolor='none', edgecolor='red',linewidth=0.7)

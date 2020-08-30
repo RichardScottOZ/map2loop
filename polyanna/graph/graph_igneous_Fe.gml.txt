@@ -1,0 +1,24 @@
+49 A-FO-xb-s
+55 A-FOh-xs-f
+50 A-GR-mg
+57 A-moa-P
+22 AP_-_pj-ccx
+6 E-_dv-od
+15 P_-MN-s
+44 P_-MNw-sf
+47 P_-TAg-sg
+14 P_-_ya-mls
+7 P_-md-PTRB
+8 P_-mgnu-PTRO
+24 P_-xmb-md-PTRC
+
+8 7 0
+8 14 0
+6 22 0
+6 15 0
+8 24 0
+6 47 0
+6 44 0
+49 50 0
+50 57 0
+55 50 0

@@ -1,0 +1,11 @@
+index,group number,index in group,number in group,code,group,uctype,colour
+1,1,1,2,Cb_Bf_u_B,MISSISSIPPIAN,erode,#b6c407
+2,1,2,2,Cb_Bf_l_u,MISSISSIPPIAN,erode,#667f87
+3,2,1,5,DvCb_EBf_l_lm,UPPER_DEVONIAN,erode,#603449
+4,2,2,5,Dv_Pa,UPPER_DEVONIAN,erode,#520213
+5,2,3,5,Dv_Ss,UPPER_DEVONIAN,erode,#42028f
+6,2,4,5,Dv_PMH,UPPER_DEVONIAN,erode,#4d53ad
+7,2,5,5,Dv_A,UPPER_DEVONIAN,erode,#d3e29e
+8,3,1,1,OdSl_B,UPPER_ORDOVICIAN,erode,#ce7298
+9,4,1,1,Od_Sk,MIDDLE_ORDOVICIAN,erode,#c6cddf
+10,5,1,1,Od_Tp,LOWER_ORDOVICIAN,erode,#44da1d

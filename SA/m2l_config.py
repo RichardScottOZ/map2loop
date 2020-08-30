@@ -17,7 +17,7 @@ local_paths=False       #flag to use local or WFS source for data inputs (True =
 
 
 data_path=''
-clut_path=''
+clut_path='../SA/data/GSSA_2M_colours.csv'
 base_url='https://gs-seamless.geoscience.nsw.gov.au/geoserver/ows?service=wfs&version=2.0.0&request=GetFeature&typeName='
 
 structure_file='../SA/data/sth_flinders_28354.shp'
