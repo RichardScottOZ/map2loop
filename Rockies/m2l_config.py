@@ -33,7 +33,50 @@ dst_crs = 'epsg:26911' # coordinate system for data
 
 #CODES AND LABELS 
 # these refer to specific fields (codes) in GIS layer or database that contain the info needed for these calcs and text substrings (labels) in the contents of these fields
-c_l={'d': 'DIP', 'dd': 'STRIKE', 'sf': 'SUBFEATURE', 'bedding': 'bed', 'otype': 'strike', 'bo': 'ATTITUDE', 'btype': 'over', 'g': 'MAX_AGE', 'g2': 'MIN_AGE', 'c': 'LABEL', 'ds': 'LITH_LIST', 'u': 'MAP_THEME', 'r1': 'LITH_LIST', 'r2': 'GENESIS', 'sill': 'sill', 'intrusive': 'intrusive', 'volcanic': 'volc', 'msc': 'SITE_CODE', 'msn': 'SHORT_NAME', 'mst': 'SITE_TYPE_', 'mtc': 'TARGET_COM', 'mscm': 'SITE_COMMO', 'mcom': 'COMMODITY_', 'minf': 'Cons', 'min': 'RM_AGE', 'max': 'RM_AGE', 'f': 'FEATURE', 'fault': 'fault', 'ff': 'FEATURE', 'fold': 'Fold', 'fdip': 'ATTITUDE', 'fdipnull': '0', 'fdipdir': 'CONFIDENCE', 'fdipdir_flag': 'alpha', 'fdipest': 'OBJECTID', 'fdipest_vals': 'MOVEMENT', 'n': 'NAME', 't': 'SUBFEATURE', 'syn': 'syn', 'o': 'OBJECTID', 'gi': 'STATION_ID'}
+c_l={'d': 'DIP',
+ 'dd': 'STRIKE',
+ 'sf': 'SUBFEATURE',
+ 'bedding': 'bed',
+ 'otype': 'strike',
+ 'bo': 'ATTITUDE',
+ 'btype': 'over',
+ 'g': 'MAX_AGE',
+ 'g2': 'MIN_AGE',
+ 'c': 'LABEL',
+ 'ds': 'LITH_LIST',
+ 'u': 'MAP_THEME',
+ 'r1': 'LITH_LIST',
+ 'r2': 'GENESIS',
+ 'sill': 'sill',
+ 'intrusive': 'intrusive',
+ 'volcanic': 'volc',
+ 'msc': 'SITE_CODE',
+ 'msn': 'SHORT_NAME',
+ 'mst': 'SITE_TYPE_',
+ 'mtc': 'TARGET_COM',
+ 'mscm': 'SITE_COMMO',
+ 'mcom': 'COMMODITY_',
+ 'minf': 'Cons',
+ 'min': 'RM_AGE',
+ 'max': 'RM_AGE',
+ 'f': 'FEATURE',
+ 'fault': 'fault',
+ 'ff': 'FEATURE',
+ 'fold': 'Fold',
+    
+ 'fdip_flag': 'fixed', # alpha, num, fixed, random
+ 'fdip': '90',
+ 'fdipnull': '0',
+    
+ 'fdipdir_flag': 'random', # alpha, num, random
+ 'fdipdirnull': '0',
+ 'fdipdir': '0',
+    
+ 'n': 'NAME',
+ 't': 'SUBFEATURE',
+ 'syn': 'syn',
+ 'o': 'OBJECTID',
+ 'gi': 'STATION_ID'}
 
 #DECIMATION
 

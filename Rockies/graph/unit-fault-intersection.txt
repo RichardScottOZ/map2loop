@@ -1,7 +1,26 @@
-0, Cb-Bf-l-u, {284, 285}
-1, Cb-Bf-u-B, {284, 285, 310}
-2, CmOd-SP, {284, 285, 286}
-3, Dv-Pa, {310}
-4, DvCb-EBf-l-lm, {284, 286, 310}
-5, Od-Sk, {285}
-6, Od-Tp, {285}
+0, Cb-Bf-l-u, {0}
+1, Cb-Bf-u-B, {0}
+2, Cm-Ar-l, {0}
+3, Cm-Ar-lw, {0}
+4, Cm-Ar-uWf, {0}
+5, Cm-Ca, {0}
+6, Cm-G, {0}
+7, Cm-L, {0}
+8, Cm-La, {0}
+9, Cm-M, {0}
+10, Cm-MD, {0}
+11, Cm-Na, {0}
+12, Cm-Pk, {0}
+13, Cm-Su-l, {0}
+14, Cm-T, {0}
+15, Cm-rim, {0}
+16, CmOd-SP, {0}
+17, Dv-A, {0}
+18, Dv-MH, {0}
+19, Dv-PMH, {0}
+20, Dv-Pa, {0}
+21, Dv-Ss, {0}
+22, DvCb-EBf-l-lm, {0}
+23, Od-Sk, {0}
+24, Od-Tp, {0}
+25, Pt-M, {0}
