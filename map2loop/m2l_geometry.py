@@ -386,6 +386,7 @@ def save_basal_no_faults(path_out,path_fault,ls_dict,dist_buffer,c_l,dst_crs):
     if(os.path.exists(path_fault)):
         faults_clip_all = gpd.read_file(path_fault)
         faults_clip=faults_clip_all[faults_clip_all[c_l['f']].str.contains(c_l['fault'])]
+        faults_clip=faults_clip.dropna(subset=['geometry'])
 
         df = DataFrame.from_dict(ls_dict, "index")
         contacts = GeoDataFrame(df,crs=dst_crs, geometry='geometry')
@@ -510,6 +511,8 @@ def save_contacts_with_faults_removed(path_fault,path_out,dist_buffer,ls_dict,ls
 
     df = DataFrame.from_dict(ls_dict, "index")
     contacts = GeoDataFrame(df,crs=dst_crs, geometry='geometry')
+    faults_clip=faults_clip.dropna(subset=['geometry'])
+
     fault_zone = faults_clip.buffer(dist_buffer) #defines buffer around faults where strat nodes will be removed
     all_fz = fault_zone.unary_union
     #display(all_fz)
@@ -569,6 +572,7 @@ def save_faults(path_faults, output_path, dtm, dtb, dtb_null, cover_map, c_l, fa
     # fd.write("Fault_ID,strike,dip_direction,down_dip\n")
     if(os.path.exists(path_faults)):
         faults_clip = gpd.read_file(path_faults)
+        faults_clip=faults_clip.dropna(subset=['geometry'])
 
         # convert text dips to equally spaced angles
         split = c_l['fdipest_vals'].split(",")
@@ -867,12 +871,28 @@ def save_fold_axial_traces(path_folds,path_fold_orientations,dtm,dtb,dtb_null,co
     folds_clip=gpd.read_file(path_folds)
     fo=open(path_fold_orientations+'/fold_axial_traces.csv',"w")
     fo.write("X,Y,Z,code,type\n")
+    folds_clip=folds_clip.dropna(subset=['geometry'])
 
     for indx,fold in folds_clip.iterrows():
         fold_name=str(fold[c_l['o']])
-        if(fold.geometry.type=='MultiLineString'):
-            for mls in fold.geometry:
-                fold_ls=LineString(mls)
+        if(not str(fold.geometry.type)=='None'):
+            if(fold.geometry.type=='MultiLineString'):
+                for mls in fold.geometry:
+                    fold_ls=LineString(mls)
+
+                    i=0
+                    for afs in fold_ls.coords:
+                        if(c_l['fold'] in fold[c_l['ff']]):
+                            if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
+                                locations=[(afs[0],afs[1])]     
+                                height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                ostr="{},{},{},FA_{},{}\n"\
+                                    .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
+                                #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
+                                fo.write(ostr)                
+                        i=i+1  
+            else:
+                fold_ls=LineString(fold.geometry)
 
                 i=0
                 for afs in fold_ls.coords:
@@ -881,24 +901,10 @@ def save_fold_axial_traces(path_folds,path_fold_orientations,dtm,dtb,dtb_null,co
                             locations=[(afs[0],afs[1])]     
                             height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
                             ostr="{},{},{},FA_{},{}\n"\
-                                 .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
+                                .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
                             #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
                             fo.write(ostr)                
                     i=i+1  
-        else:
-            fold_ls=LineString(fold.geometry)
-
-            i=0
-            for afs in fold_ls.coords:
-                if(c_l['fold'] in fold[c_l['ff']]):
-                    if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
-                        locations=[(afs[0],afs[1])]     
-                        height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                        ostr="{},{},{},FA_{},{}\n"\
-                              .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
-                        #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
-                        fo.write(ostr)                
-                i=i+1  
 
     fo.close()
     print("fold axial traces saved as",path_fold_orientations+'fold_axial_traces.csv')
@@ -1945,16 +1951,84 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
     f=open(output_path+'fold_axial_trace_orientations2.csv','w')
     f.write('X,Y,Z,azimuth,dip,polarity,formation,group\n')
     folds_clip=gpd.read_file(path_folds,)
+    folds_clip=folds_clip.dropna(subset=['geometry'])
     fo=open(output_path+'fold_axial_traces.csv',"w")
     fo.write("X,Y,Z,code,type\n")
     dummy=[]
     dummy.append(1)
     for indx,fold in folds_clip.iterrows():
         fold_name=str(fold[c_l['o']])   
-        if(fold.geometry.type=='MultiLineString'):
-            for mls in fold.geometry:              
-                fold_ls=LineString(mls)        
+        if(not str(fold.geometry.type)=='None'):
+            if(fold.geometry.type=='MultiLineString'):
+                for mls in fold.geometry:              
+                    fold_ls=LineString(mls)        
 
+                    i=0
+                    first=True
+                    for afs in fold_ls.coords:
+                        if(c_l['fold'] in fold[c_l['ff']]):
+                            # save out current geometry of FAT
+                            if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
+                                locations=[(afs[0],afs[1])]                  
+                                height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                ostr="{},{},{},FA_{},{}\n"\
+                                    .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
+                                #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
+                                fo.write(ostr)  
+                                # calculate FAT normal offsets  
+                                if(not first):
+                                    l,m=m2l_utils.pts2dircos(lastx,lasty,afs[0],afs[1])
+                                    midx=lastx+((afs[0]-lastx)/2)
+                                    midy=lasty+((afs[1]-lasty)/2)
+                                    midxr=midx+(fat_step*-m)
+                                    midyr=midy+(fat_step*l)
+                                    midxl=midx-(fat_step*-m)
+                                    midyl=midy-(fat_step*l)
+                                    r=int((midy-bbox[1])/spacing)
+                                    c=int((midx-bbox[0])/spacing)
+                                    if(close_dip==-999):
+                                        dip=dip_grid[r,c]
+                                    else:
+                                        dip=close_dip
+                                    dip_dir=dip_dir_grid[r,c]
+                                    
+                                    dip2,dipdir2=m2l_utils.dircos2ddd(-m,l,cos(radians(dip)))
+                                    if(c_l['syn'] in fold[c_l['t']]):
+                                        dipdir2=dipdir2+180
+
+                                    lc=sin(radians(dip_dir-90))
+                                    mc=cos(radians(dip_dir-90))
+                                    dotprod=fabs((l*lc)+(m*mc))
+                                    #print(dotprod,midx,midy,minind,contacts[minind,2],l,m,lc,mc)   
+                                    # if FAT is sub-parallel to local interpolated contacts, save out as orientations  
+                                    if(dotprod>0.85):
+                                        geometry = [Point(midxr,midyr)]
+                                        gdf = GeoDataFrame(dummy, crs=dst_crs, geometry=geometry)
+                                        structure_code = gpd.sjoin(gdf, geology, how="left", op="within")
+                                        if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
+                                            locations=[(midxr,midyr)]                  
+                                            height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                            ostr="{},{},{},{},{},{},{},{}\n"\
+                                                .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                            #ostr=str(midxr)+','+str(midyr)+','+str(height)+','+str(dipdir)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
+                                            f.write(ostr)
+                                        
+                                        geometry = [Point(midxl,midyl)]
+                                        gdf = GeoDataFrame(dummy, crs=dst_crs, geometry=geometry)
+                                        structure_code = gpd.sjoin(gdf, geology, how="left", op="within")
+                                        if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
+                                            locations=[(midxl,midyl)]                  
+                                            height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                            ostr="{},{},{},{},{},{},{},{}\n"\
+                                                .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                            #ostr=str(midxl)+','+str(midyl)+','+str(height)+','+str(dipdir+180)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
+                                            f.write(ostr)
+                                first=False
+                                lastx=afs[0]
+                                lasty=afs[1]
+                        i=i+1  
+            else:
+                fold_ls=LineString(fold.geometry)
                 i=0
                 first=True
                 for afs in fold_ls.coords:
@@ -1964,7 +2038,7 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                             locations=[(afs[0],afs[1])]                  
                             height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
                             ostr="{},{},{},FA_{},{}\n"\
-                                  .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
+                                .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
                             #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
                             fo.write(ostr)  
                             # calculate FAT normal offsets  
@@ -1982,14 +2056,12 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                     dip=dip_grid[r,c]
                                 else:
                                     dip=close_dip
-                                dip_dir=dip_dir_grid[r,c]
-                                
+                                dipdir=dip_dir_grid[r,c]
                                 dip2,dipdir2=m2l_utils.dircos2ddd(-m,l,cos(radians(dip)))
                                 if(c_l['syn'] in fold[c_l['t']]):
                                     dipdir2=dipdir2+180
-
-                                lc=sin(radians(dip_dir-90))
-                                mc=cos(radians(dip_dir-90))
+                                lc=sin(radians(dipdir-90))
+                                mc=cos(radians(dipdir-90))
                                 dotprod=fabs((l*lc)+(m*mc))
                                 #print(dotprod,midx,midy,minind,contacts[minind,2],l,m,lc,mc)   
                                 # if FAT is sub-parallel to local interpolated contacts, save out as orientations  
@@ -2001,7 +2073,7 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                         locations=[(midxr,midyr)]                  
                                         height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
                                         ostr="{},{},{},{},{},{},{},{}\n"\
-                                              .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                            .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
                                         #ostr=str(midxr)+','+str(midyr)+','+str(height)+','+str(dipdir)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                         f.write(ostr)
                                     
@@ -2012,77 +2084,13 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                         locations=[(midxl,midyl)]                  
                                         height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
                                         ostr="{},{},{},{},{},{},{},{}\n"\
-                                              .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                            .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
                                         #ostr=str(midxl)+','+str(midyl)+','+str(height)+','+str(dipdir+180)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                         f.write(ostr)
                             first=False
                             lastx=afs[0]
                             lasty=afs[1]
                     i=i+1  
-        else:
-            fold_ls=LineString(fold.geometry)
-            i=0
-            first=True
-            for afs in fold_ls.coords:
-                if(c_l['fold'] in fold[c_l['ff']]):
-                    # save out current geometry of FAT
-                    if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
-                        locations=[(afs[0],afs[1])]                  
-                        height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                        ostr="{},{},{},FA_{},{}\n"\
-                              .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
-                        #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
-                        fo.write(ostr)  
-                        # calculate FAT normal offsets  
-                        if(not first):
-                            l,m=m2l_utils.pts2dircos(lastx,lasty,afs[0],afs[1])
-                            midx=lastx+((afs[0]-lastx)/2)
-                            midy=lasty+((afs[1]-lasty)/2)
-                            midxr=midx+(fat_step*-m)
-                            midyr=midy+(fat_step*l)
-                            midxl=midx-(fat_step*-m)
-                            midyl=midy-(fat_step*l)
-                            r=int((midy-bbox[1])/spacing)
-                            c=int((midx-bbox[0])/spacing)
-                            if(close_dip==-999):
-                                dip=dip_grid[r,c]
-                            else:
-                                dip=close_dip
-                            dipdir=dip_dir_grid[r,c]
-                            dip2,dipdir2=m2l_utils.dircos2ddd(-m,l,cos(radians(dip)))
-                            if(c_l['syn'] in fold[c_l['t']]):
-                                dipdir2=dipdir2+180
-                            lc=sin(radians(dipdir-90))
-                            mc=cos(radians(dipdir-90))
-                            dotprod=fabs((l*lc)+(m*mc))
-                            #print(dotprod,midx,midy,minind,contacts[minind,2],l,m,lc,mc)   
-                            # if FAT is sub-parallel to local interpolated contacts, save out as orientations  
-                            if(dotprod>0.85):
-                                geometry = [Point(midxr,midyr)]
-                                gdf = GeoDataFrame(dummy, crs=dst_crs, geometry=geometry)
-                                structure_code = gpd.sjoin(gdf, geology, how="left", op="within")
-                                if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
-                                    locations=[(midxr,midyr)]                  
-                                    height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                    ostr="{},{},{},{},{},{},{},{}\n"\
-                                          .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
-                                    #ostr=str(midxr)+','+str(midyr)+','+str(height)+','+str(dipdir)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
-                                    f.write(ostr)
-                                
-                                geometry = [Point(midxl,midyl)]
-                                gdf = GeoDataFrame(dummy, crs=dst_crs, geometry=geometry)
-                                structure_code = gpd.sjoin(gdf, geology, how="left", op="within")
-                                if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
-                                    locations=[(midxl,midyl)]                  
-                                    height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                    ostr="{},{},{},{},{},{},{},{}\n"\
-                                          .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
-                                    #ostr=str(midxl)+','+str(midyl)+','+str(height)+','+str(dipdir+180)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
-                                    f.write(ostr)
-                        first=False
-                        lastx=afs[0]
-                        lasty=afs[1]
-                i=i+1  
     
     fo.close()
     f.close()

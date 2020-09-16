@@ -28,12 +28,12 @@ def explode_polylines(indf,c_l,dst_crs):
 
 
 
-def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_path,bbox,c_l,dst_crs,local_paths,drift_prefix):
+def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_path,bbox,c_l,dst_crs,local_paths,drift_prefix,polygo):
 
-    y_point_list = [bbox[1], bbox[1], bbox[3], bbox[3], bbox[1]]
-    x_point_list = [bbox[0], bbox[2], bbox[2], bbox[0], bbox[0]]
-    bbox_geom = Polygon(zip(x_point_list, y_point_list))
-    polygo = gpd.GeoDataFrame(index=[0], crs=dst_crs, geometry=[bbox_geom]) 
+    #y_point_list = [bbox[1], bbox[1], bbox[3], bbox[3], bbox[1]]
+    #x_point_list = [bbox[0], bbox[2], bbox[2], bbox[0], bbox[0]]
+    #bbox_geom = Polygon(zip(x_point_list, y_point_list))
+    #polygo = gpd.GeoDataFrame(index=[0], crs=dst_crs, geometry=[bbox_geom]) 
 
     m2l_errors=[]
     m2l_warnings=[]
@@ -315,6 +315,7 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_p
         
         if(len(folds_clip)>0):
             fold_file=tmp_path+'folds_clip.shp'
+            folds_clip=folds_clip.dropna(subset=['geometry'])
             folds_clip.to_file(fold_file)         
         else:
             fold_file=tmp_path+'fold_clip.shp'
@@ -324,6 +325,8 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_p
         if(len(faults_clip)>0):
             fault_file=tmp_path+'faults_clip.shp'
             faults_explode.crs=dst_crs
+            faults_explode=faults_explode.dropna(subset=['geometry'])
+
             faults_explode.to_file(fault_file)         
         else:
             fault_file=tmp_path+'faults_clip.shp'

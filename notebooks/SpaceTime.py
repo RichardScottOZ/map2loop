@@ -3,53 +3,53 @@ import matplotlib.pyplot as plt
 
 
 def plot_geochron(geochron_filename,bbox):
-    geochron=gpd.read_file(geochron_filename,bbox=bbox)
-    geochron_sort=geochron.sort_values(by='ANALYSIS_A')
+    geochron=gpd.read_file(geochron_filename.format(bbox))
+    geochron_sort=geochron.sort_values(by='analysis_a')
     fig = plt.figure(figsize=[7,7])
     plt.gca().set_ylim(0, 4000)
     xscale=200
     i=0
     for ind,date in geochron_sort.iterrows():
-        if('Ar-Ar' in date['ANALYSIS_T']):
+        if('Ar-Ar' in date['analysis_t']):
             c='r'
             label='Ar-Ar'
-        elif('U-Pb' in date['ANALYSIS_T']):
+        elif('U-Pb' in date['analysis_t']):
             c='b'
             label='U-Pb'
-        elif('K-Ar' in date['ANALYSIS_T']):
+        elif('K-Ar' in date['analysis_t']):
             c='g'
             label='K-Ar'
         else:
             c='k'
             label='other'
 
-        if('igneous' in date['ANALYSIS_E']):
+        if('igneous' in date['analysis_e']):
             s='o'
-        elif('metam' in date['ANALYSIS_E']):
+        elif('metam' in date['analysis_e']):
             s='d'
-        elif('xeno' in date['ANALYSIS_E']):
+        elif('xeno' in date['analysis_e']):
             s='s'
-        elif('cool' in date['ANALYSIS_E']):
+        elif('cool' in date['analysis_e']):
             s='v'
-        elif('maximum age' in date['ANALYSIS_E']):
+        elif('maximum age' in date['analysis_e']):
             s='1'
-        elif('depositional' in date['ANALYSIS_E']):
+        elif('depositional' in date['analysis_e']):
             s='p'
-        elif('minimum' in date['ANALYSIS_E']):
+        elif('minimum' in date['analysis_e']):
             s='+'
         else:
             s='.'
 
-        line = plt.Line2D((i*xscale, i*xscale),(date['ANALYSIS_A']-date['ANALYSIS_U'], date['ANALYSIS_A']+date['ANALYSIS_U']), lw=1.0,color='#000000')
+        line = plt.Line2D((i*xscale, i*xscale),(date['analysis_a']-date['analysis_u'], date['analysis_a']+date['analysis_u']), lw=1.0,color='#000000')
         plt.gca().add_line(line)
-        plt.plot([i*xscale], [date['ANALYSIS_A']], c+s)
+        plt.plot([i*xscale], [date['analysis_a']], c+s)
 
         i=i+1
     ax = plt.axis()
     plt.axis((ax[0],ax[1],ax[3],ax[2]))
     plt.title('Geochronology')
     plt.savefig("geochron.pdf")
-    #geochron_sort.plot(column='ANALYSIS_E',figsize=(7,7),edgecolor='#000000',linewidth=0.2)
+    #geochron_sort.plot(column='analysis_e',figsize=(7,7),edgecolor='#000000',linewidth=0.2)
     #plt.savefig('geochron_map.pdf')  
     if(len(geochron_sort)==0):
         plt.title("No geochron data in area")
@@ -58,24 +58,24 @@ def plot_geochron(geochron_filename,bbox):
     plt.show()  
     
 def plot_geology_codes(geology_filename,bbox):
-    geol=gpd.read_file(geology_filename,bbox=bbox)
-    geol_sort=geol.sort_values(by='MAX_AGE_MA')
-    geol_sort_unique=geol_sort.drop_duplicates(subset=['CODE'])
+    geol=gpd.read_file(geology_filename)
+    geol_sort=geol.sort_values(by='max_age_ma')
+    geol_sort_unique=geol_sort.drop_duplicates(subset=['code'])
 
     plt.axes()
     xscale=200
     i=0
     print(len(geol_sort_unique))
     for ind,poly in geol_sort_unique.iterrows():
-        if(not str(poly['MIN_AGE_MA'])=='None' and not str(poly['MAX_AGE_MA'])=='None'  ):
-            ave_age=float(poly['MIN_AGE_MA'])+(float(poly['MAX_AGE_MA'])-float(poly['MIN_AGE_MA']))/2.0
+        if(not str(poly['min_age_ma'])=='None' and not str(poly['max_age_ma'])=='None'  ):
+            ave_age=float(poly['min_age_ma'])+(float(poly['max_age_ma'])-float(poly['min_age_ma']))/2.0
             plt.plot([i*xscale], ave_age, 'ro')        
-            line = plt.Line2D((i*xscale, i*xscale),(float(poly['MAX_AGE_MA']), float(poly['MIN_AGE_MA'])), lw=1.5)
+            line = plt.Line2D((i*xscale, i*xscale),(float(poly['max_age_ma']), float(poly['min_age_ma'])), lw=1.5)
             plt.gca().add_line(line)
             i=i+1
     ax = plt.axis()
     plt.axis((ax[0],ax[1],ax[3],ax[2]))
-    plt.title('Strat Codes')
+    plt.title('Strat codes')
     plt.savefig('codes.pdf')  
 
     plt.show()   
@@ -83,24 +83,24 @@ def plot_geology_codes(geology_filename,bbox):
 def plot_geology_parents(geology_filename,bbox):
     colors=['b','g','r','c','m','y','k','w']
     fig = plt.figure(figsize=[7, 7])        
-    geol=gpd.read_file(geology_filename,bbox=bbox)
+    geol=gpd.read_file(geology_filename.format(bbox))
 
-    geol_unique=geol.drop_duplicates(subset=['CODE'])
+    geol_unique=geol.drop_duplicates(subset=['code'])
 
-    geol_unique_code=geol_unique.set_index('CODE')
-    parents=geol_unique['PARENTNAME'].unique()
+    geol_unique_code=geol_unique.set_index('code')
+    parents=geol_unique['parentname'].unique()
     print('parents=',len(parents),'codes=',len(geol_unique))
     minmax_parent={}
     for parent in parents:
         min=1e10
         max=0
-        for code in geol_unique['CODE']:
-            if(geol_unique_code.loc[code]['PARENTNAME']==parent):
-                if(not str(geol_unique_code.loc[code]['MIN_AGE_MA'])=='None' and not str(geol_unique_code.loc[code]['MAX_AGE_MA'])=='None'  ):
-                    if(float(geol_unique_code.loc[code]['MIN_AGE_MA'])<min):
-                        min=float(geol_unique_code.loc[code]['MIN_AGE_MA'])        
-                    if(float(geol_unique_code.loc[code]['MAX_AGE_MA'])>max):
-                        max=float(geol_unique_code.loc[code]['MAX_AGE_MA'])
+        for code in geol_unique['code']:
+            if(geol_unique_code.loc[code]['parentname']==parent):
+                if(not str(geol_unique_code.loc[code]['min_age_ma'])=='None' and not str(geol_unique_code.loc[code]['max_age_ma'])=='None'  ):
+                    if(float(geol_unique_code.loc[code]['min_age_ma'])<min):
+                        min=float(geol_unique_code.loc[code]['min_age_ma'])        
+                    if(float(geol_unique_code.loc[code]['max_age_ma'])>max):
+                        max=float(geol_unique_code.loc[code]['max_age_ma'])
         if( not '_Top' in parent):
             minmax_parent[parent.replace("_","")]=[min,max]
     #display(minmax_parent)
@@ -122,7 +122,7 @@ def plot_geology_parents(geology_filename,bbox):
     plt.axis((ax[0],ax[1],ax[3],ax[2]))
     plt.gca().set_ylim(4000, 0)
     plt.savefig('parents.pdf',papertype = 'a4', orientation = 'portrait')  
-    #geol.plot(column='PARENTNAME',figsize=(7,7),edgecolor='#000000',linewidth=0.2,legend=True,legend_kwds={'loc': [0,-.4]})
+    #geol.plot(column='parentname',figsize=(7,7),edgecolor='#000000',linewidth=0.2,legend=True,legend_kwds={'loc': [0,-.4]})
 
     #plt.savefig('parents_map.pdf',papertype = 'a4', orientation = 'portrait')  
     plt.title('Stratigraphy')
@@ -131,9 +131,9 @@ def plot_geology_parents(geology_filename,bbox):
     
 def plot_orogenic(orogenic_filename,bbox):
     fig = plt.figure(figsize=[7,7])
-    geol=gpd.read_file(orogenic_filename,bbox=bbox)
+    geol=gpd.read_file(orogenic_filename.format(bbox))
 
-    geol_unique=geol.drop_duplicates(subset=['EVENTNAME'])
+    geol_unique=geol.drop_duplicates(subset=['eventname'])
     minmax={}
     for ind,geol in geol_unique.iterrows():
         min=1e10
@@ -142,7 +142,7 @@ def plot_orogenic(orogenic_filename,bbox):
             min=float(geol['min_age'])        
         if(float(geol['max_age'])>max):
             max=float(geol['max_age'])
-        minmax[geol['EVENTNAME']]=[min,max]
+        minmax[geol['eventname']]=[min,max]
     #display(minmax_parent)
     minmax_sort=sorted(minmax.items(), key = lambda kv:(kv[1], kv[0]))
 
@@ -163,7 +163,7 @@ def plot_orogenic(orogenic_filename,bbox):
         plt.axis((ax[0],ax[1],ax[3],ax[2]))
         plt.gca().set_ylim(4000, 0)
         plt.savefig('orogenic.pdf',papertype = 'a4', orientation = 'portrait')  
-        #geol.plot(column='PARENTNAME',figsize=(7,7),edgecolor='#000000',linewidth=0.2,legend=True,legend_kwds={'loc': [0,-.4]})
+        #geol.plot(column='parentname',figsize=(7,7),edgecolor='#000000',linewidth=0.2,legend=True,legend_kwds={'loc': [0,-.4]})
     
         #plt.savefig('parents_map.pdf',papertype = 'a4', orientation = 'portrait')  
         plt.title('Orogenic Events')
@@ -175,8 +175,9 @@ def plot_faults(linear_filename,bbox):
     import matplotlib.pylab as plt 
     import sys 
     import numpy as np 
-    linear=gpd.read_file(linear_filename,bbox=bbox)
-    faults=linear[linear['FEATURE'].str.contains("Fault")]
+    linear=gpd.read_file(linear_filename)
+    faults=linear[linear['feature'].str.contains("Fault")]
+    faults=faults.dropna(subset=['geometry'])
 
     f=open('fault.txt','w')
     for inf,fault in faults.iterrows():
@@ -240,8 +241,9 @@ def plot_folds(linear_filename,bbox):
     import sys 
     import numpy as np 
 
-    linear=gpd.read_file(linear_filename,bbox=bbox)
-    folds=linear[linear['FEATURE'].str.contains("Fold")]
+    linear=gpd.read_file(linear_filename)
+    folds=linear[linear['feature'].str.contains("Fold")]
+    folds=folds.dropna(subset=['geometry'])
 
     f=open('fold.txt','w')
     for inf,fold in folds.iterrows():
@@ -344,16 +346,16 @@ def plot_grav(grav_netcdf_path,grav_path,bbox):
     plt.show()
 
 def plot_eggs(eggs_filename,bbox):
-    eggs=gpd.read_file(eggs_filename,bbox=bbox)
+    eggs=gpd.read_file(eggs_filename.format(bbox))
     if(len(eggs)>0):
-        eggs.plot(figsize=(7,7),column='LOCATION_Z_IN_METRES')
+        eggs.plot(figsize=(7,7),column='location_z')
     else:
         plt.text(.2,.2,"No eggs values\n in area")
     plt.title('EGGS')
     plt.show()
 
 def plot_density(density_filename,bbox):
-    density=gpd.read_file(density_filename,bbox=bbox)
+    density=gpd.read_file(density_filename.format(bbox))
     if(len(density)>0):
         density.plot(figsize=(7,7),column='value')
     else:
@@ -363,7 +365,7 @@ def plot_density(density_filename,bbox):
     plt.show()
 
 def plot_mag_sus(mag_sus_filename,bbox):
-    mag_sus=gpd.read_file(mag_sus_filename,bbox=bbox)
+    mag_sus=gpd.read_file(mag_sus_filename.format(bbox))
     if(len(mag_sus)>0):
         mag_sus.plot(figsize=(7,7),column='lithologyg')
     else:
@@ -395,7 +397,7 @@ def plot_mag_mag_sus(mag_netcdf_path,mag_sus_filename,bbox):
     #plt.contourf(data[::-1],cmap ='gist_ncar') # flip latitudes so they go south -> north
     ax[0].imshow(data,cmap ='gist_rainbow',vmin=-1000,vmax=1000)
     
-    mag_sus=gpd.read_file(mag_sus_filename,bbox=bbox)
+    mag_sus=gpd.read_file(mag_sus_filename.format(bbox))
     if(len(mag_sus)>0):
         mag_sus.plot(ax=ax[1],figsize=(7,7),column='lithologyg')
     else:
@@ -428,7 +430,7 @@ def plot_grav_density(grav_netcdf_path,density_filename,bbox):
     data = netcdf_dataset.variables['grav_ir_anomaly'][latselect,lonselect]
     ax[0].imshow(data,cmap ='gist_rainbow')
     
-    density=gpd.read_file(density_filename,bbox=bbox)
+    density=gpd.read_file(density_filename.format(bbox))
     if(len(density)>0):
         density.plot(ax=ax[1],figsize=(7,7),column='value')
     else:
@@ -440,13 +442,13 @@ def plot_grav_density(grav_netcdf_path,density_filename,bbox):
     
 def plot_plutons(geology_filename,bbox):
     import pandas as pd
-    geol=gpd.read_file(geology_filename,bbox=bbox)
-    plutons=geol[ geol['ROCKTYPE1'].str.contains( 'igneous')]
+    geol=gpd.read_file(geology_filename.format(bbox))
+    plutons=geol[ geol['rocktype1'].str.contains( 'igneous')]
     #display(plutons)
-    plutons_unique=plutons.drop_duplicates(subset=['CODE'])
-    #plutons["MAX_AGE_MA"] = pd.to_numeric(plutons["MAX_AGE_MA"], downcast="float")
-    #plutons["MIN_AGE_MA"] = pd.to_numeric(plutons["MIN_AGE_MA"], downcast="float")
-    plutons_sort_unique=plutons_unique.sort_values(by='MAX_AGE_MA')
+    plutons_unique=plutons.drop_duplicates(subset=['code'])
+    #plutons["max_age_ma"] = pd.to_numeric(plutons["max_age_ma"], downcast="float")
+    #plutons["min_age_ma"] = pd.to_numeric(plutons["min_age_ma"], downcast="float")
+    plutons_sort_unique=plutons_unique.sort_values(by='max_age_ma')
     #display(plutons_sort_unique)
     #return
 
@@ -456,19 +458,19 @@ def plot_plutons(geology_filename,bbox):
     i=0
     #print(len(plutons_sort_unique))
     for ind,poly in plutons_sort_unique.iterrows():
-        if(not str(poly['MIN_AGE_MA'])=='None' and not str(poly['MAX_AGE_MA'])=='None'  ):
-            ave_age=float(poly['MIN_AGE_MA'])+(float(poly['MAX_AGE_MA'])-float(poly['MIN_AGE_MA']))/2.0
-            #print("mafic",poly['ROCKTYPE1'])
-            if("volcanic" in poly['ROCKTYPE1']):
+        if(not str(poly['min_age_ma'])=='None' and not str(poly['max_age_ma'])=='None'  ):
+            ave_age=float(poly['min_age_ma'])+(float(poly['max_age_ma'])-float(poly['min_age_ma']))/2.0
+            #print("mafic",poly['rocktype1'])
+            if("volcanic" in poly['rocktype1']):
                 s='v'
             else:
                 s='o'  
-            if("mafic" in poly['ROCKTYPE1']):
+            if("mafic" in poly['rocktype1']):
                 c='b'
             else:
                 c='r'  
                 
-            line = plt.Line2D((i*xscale, i*xscale),(float(poly['MAX_AGE_MA']), float(poly['MIN_AGE_MA'])), lw=1.5,color='#000000')
+            line = plt.Line2D((i*xscale, i*xscale),(float(poly['max_age_ma']), float(poly['min_age_ma'])), lw=1.5,color='#000000')
             plt.gca().add_line(line)
             plt.plot([i*xscale], ave_age, c+s)                            
             i=i+1
