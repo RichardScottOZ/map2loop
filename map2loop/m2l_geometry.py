@@ -2722,3 +2722,69 @@ def save_basal_contacts_orientations_csv(contacts,orientations,geol_clip,tmp_pat
                     i=i+1   
     f.close()
 
+def process_sills(output_path,geol_clip,dtm,dtb,dtb_null,cover_map,contact_decimate,c_l):
+    
+    sills=geol_clip[geol_clip[c_l['ds']].str.contains(c_l['sill'])]
+    sills=sills[sills[c_l['r1']].str.contains(c_l['intrusive'])]
+    
+    sill_dict = {}
+    i=0
+    for ind,sill in sills.iterrows():
+        for ind2,geol in geol_clip.iterrows():
+            if(geol[c_l['o']] != sill[c_l['o']]):
+                if (geol.geometry.intersects(sill.geometry)):
+                    LineStringC = geol.geometry.intersection(sill.geometry)
+                    if(LineStringC.wkt.split(" ")[0] == 'MULTIPOLYGON' or
+                       LineStringC.wkt.split(" ")[0] == 'POLYGON'):  # ignore polygon intersections for now, worry about them later!
+                        print(ageol[c_l['o']], "debug:",
+                              LineStringC.geometry.type)
+                        continue
+
+                    elif(LineStringC.wkt.split(" ")[0] == 'MULTILINESTRING' or LineStringC.wkt.split(" ")[0] == 'GEOMETRYCOLLECTION'):
+                        k = 0
+                        for lineC in LineStringC:  # process all linestrings
+                            first=True
+                            if(lineC.wkt.split(" ")[0] == 'LINESTRING'):
+                                # decimate to reduce number of points, but also take second and third point of a series to keep gempy happy
+                                if(m2l_utils.mod_safe(k, contact_decimate) == 0 or k == int((len(LineStringC)-1)/2) or k == len(LineStringC)-1):
+                                    # doesn't like point right on edge?
+                                    if(first):
+                                        first=False
+                                    locations = [
+                                        (lineC.coords[0][0], lineC.coords[0][1])]
+                                    if(lineC.coords[0][0] > dtm.bounds[0] and lineC.coords[0][0] < dtm.bounds[2] and
+                                       lineC.coords[0][1] > dtm.bounds[1] and lineC.coords[0][1] < dtm.bounds[3]):
+                                        height = m2l_utils.value_from_dtm_dtb(
+                                            dtm, dtb, dtb_null, cover_map, locations)
+                                        
+
+                                        dlsx = lineC.coords[0][0] - \
+                                            lineC.coords[1][0]
+                                        dlsy = lineC.coords[0][1] - \
+                                            lineC.coords[1][1]
+                                        lsx = dlsx / \
+                                            sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                                        lsy = dlsy / \
+                                            sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                                        
+                                        azimuth = (180+degrees(atan2(lsy, -lsx))) % 360
+                                        # pt just a bit in/out from line
+                                        testpx = lineC.coords[0][0]-lsy
+                                        testpy = lineC.coords[0][0]+lsx
+
+                                        if(sill.geometry.type == 'Polygon'):
+                                            if Polygon(sill.geometry).contains(Point(testpx, testpy)):
+                                                azimuth = (azimuth-180) % 360
+                                        else:
+                                            if MultiPolygon(sill.geometry).contains(Point(testpx, testpy)):
+                                                azimuth = (azimuth-180) % 360                                    
+                                        sill_dict[i] ={"X":lineC.coords[0][0],"Y": lineC.coords[0][1], "Z":height, "sill_code":sill[c_l['c']],"host_code":geol[c_l['c']],"outwards":azimuth}
+                                        i=i+1
+                                    else:
+                                        continue
+
+
+                                k += 1
+
+    sills_df=pd.DataFrame.from_dict(sill_dict,orient='index')
+    sills_df.to_csv(output_path+'sills.csv')
