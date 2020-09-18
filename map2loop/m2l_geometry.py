@@ -2722,7 +2722,7 @@ def save_basal_contacts_orientations_csv(contacts,orientations,geol_clip,tmp_pat
                     i=i+1   
     f.close()
 
-def process_sills(output_path,geol_clip,dtm,dtb,dtb_null,cover_map,contact_decimate,c_l):
+def process_sills(output_path,geol_clip,dtm,dtb,dtb_null,cover_map,contact_decimate,c_l,dip_grid,x,y,spacing,bbox,buffer):
     
     sills=geol_clip[geol_clip[c_l['ds']].str.contains(c_l['sill'])]
     sills=sills[sills[c_l['r1']].str.contains(c_l['intrusive'])]
@@ -2748,8 +2748,7 @@ def process_sills(output_path,geol_clip,dtm,dtb,dtb_null,cover_map,contact_decim
                                 # decimate to reduce number of points, but also take second and third point of a series to keep gempy happy
                                 if(m2l_utils.mod_safe(k, contact_decimate) == 0 or k == int((len(LineStringC)-1)/2) or k == len(LineStringC)-1):
                                     # doesn't like point right on edge?
-                                    if(first):
-                                        first=False
+
                                     locations = [
                                         (lineC.coords[0][0], lineC.coords[0][1])]
                                     if(lineC.coords[0][0] > dtm.bounds[0] and lineC.coords[0][0] < dtm.bounds[2] and
@@ -2758,19 +2757,24 @@ def process_sills(output_path,geol_clip,dtm,dtb,dtb_null,cover_map,contact_decim
                                             dtm, dtb, dtb_null, cover_map, locations)
                                         
 
-                                        dlsx = lineC.coords[0][0] - \
-                                            lineC.coords[1][0]
-                                        dlsy = lineC.coords[0][1] - \
-                                            lineC.coords[1][1]
-                                        lsx = dlsx / \
-                                            sqrt((dlsx*dlsx)+(dlsy*dlsy))
-                                        lsy = dlsy / \
-                                            sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                                        dlsx = lineC.coords[0][0] - lineC.coords[1][0]
+                                        dlsy = lineC.coords[0][1] - lineC.coords[1][1]
+                                        lsx = dlsx / sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                                        lsy = dlsy / sqrt((dlsx*dlsx)+(dlsy*dlsy))
                                         
                                         azimuth = (180+degrees(atan2(lsy, -lsx))) % 360
+                                        
                                         # pt just a bit in/out from line
                                         testpx = lineC.coords[0][0]-lsy
                                         testpy = lineC.coords[0][0]+lsx
+
+                                        midx=lineC.coords[0][0]+((lineC.coords[1][0] - lineC.coords[0][0])/2)
+                                        midy=lineC.coords[0][1]+((lineC.coords[1][1] - lineC.coords[0][1])/2)
+                                        midpoint=Point(midx,midy)
+                                        dx1=-lsy*buffer
+                                        dy1=lsx*buffer
+                                        dx2=-dx1
+                                        dy2=-dy1
 
                                         if(sill.geometry.type == 'Polygon'):
                                             if Polygon(sill.geometry).contains(Point(testpx, testpy)):
@@ -2778,7 +2782,38 @@ def process_sills(output_path,geol_clip,dtm,dtb,dtb_null,cover_map,contact_decim
                                         else:
                                             if MultiPolygon(sill.geometry).contains(Point(testpx, testpy)):
                                                 azimuth = (azimuth-180) % 360                                    
-                                        sill_dict[i] ={"X":lineC.coords[0][0],"Y": lineC.coords[0][1], "Z":height, "sill_code":sill[c_l['c']],"host_code":geol[c_l['c']],"outwards":azimuth}
+
+                                        p1=Point(midx+lsy,midy-lsx)
+                                        p2=Point((midx+dx2,midy+dy2))
+                                                
+                                        r=int((midy-bbox[1])/spacing)
+                                        c=int((midx-bbox[0])/spacing)
+
+                                        dip_mean=dip_grid[r,c]
+                                        ddline=LineString((p1,p2))
+                                        #print(ddline,midpoint)
+                                        if(ddline.intersects(sill.geometry)): 
+                                            isects=ddline.intersection(sill.geometry)                                        
+                                            if(isects.geom_type=="MultiLineString"):
+                                                min_dist=1e9
+                                                for line in isects: 
+                                                    app_thickness=m2l_utils.ptsdist(line.coords[1][0],line.coords[1][1],midx,midy)
+                                                    if(app_thickness<buffer*2):
+                                                        if(min_dist>app_thickness):
+                                                            min_dist=app_thickness
+                                                app_thickness=min_dist
+                                                est_thickness=app_thickness*sin(radians(dip_mean))
+                                                
+                                            else:
+                                                #print(isects)
+                                                app_thickness=m2l_utils.ptsdist(isects.coords[1][0],isects.coords[1][1],midx,midy)
+                                                if(app_thickness<buffer*2):
+                                                    est_thickness=app_thickness*sin(radians(dip_mean))
+                                        else:
+                                            app_thickness=-999
+                                            est_thickness=-999
+
+                                        sill_dict[i] ={"X":lineC.coords[0][0],"Y": lineC.coords[0][1], "Z":height, "sill_code":sill[c_l['c']],"host_code":geol[c_l['c']],"outwards":azimuth,"apparent thickness":app_thickness,"true thickness":est_thickness}
                                         i=i+1
                                     else:
                                         continue
