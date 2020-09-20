@@ -194,6 +194,12 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_p
                         folds[c_l[code]].fillna("0", inplace = True)
 
             folds_clip=m2l_utils.clip_shp(folds,polygo)
+            if(len(folds_clip) > 0):
+                folds_explode = explode_polylines(folds_clip, c_l, dst_crs)
+                if(len(folds_explode) > len(folds_clip)):
+                    m2l_warnings.append(
+                        'some folds are MultiPolyLines, and have been split')
+                folds_explode.crs = dst_crs
 
             show_metadata(folds_clip,"fold layer")    
         else: 
@@ -315,8 +321,8 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_p
         
         if(len(folds_clip)>0):
             fold_file=tmp_path+'folds_clip.shp'
-            folds_clip=folds_clip.dropna(subset=['geometry'])
-            folds_clip.to_file(fold_file)         
+            folds_explode=folds_explode.dropna(subset=['geometry'])
+            folds_explode.to_file(fold_file)         
         else:
             fold_file=tmp_path+'fold_clip.shp'
             print("\nFold layer metadata\n--------------------")             
