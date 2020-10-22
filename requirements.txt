@@ -16,3 +16,4 @@ scikit-image
 LoopStructural
 pygeos
 ipyfilechooser
+gempy >= 2.2.7

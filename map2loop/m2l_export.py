@@ -982,10 +982,14 @@ def loop2gempy(*args, **kwargs):
     :param dtm_reproj_file: path of dtm file
     :param faults_contact: path of contacts file with fault data
     :param faults_orientations: path of orientations file with fault data
+    :param faults_rel_matrix: bool matrix describing the interaction between groups. Rows offset columns
+    :param faults_groups_rel: bool matrix describing the interaction between faults and features
+    :param faults_faults_rel: bool matrix describing the interaction between faults and faults
     :param model_name: name of the model
     :param compute (bool): Default True. Whether or not compute the model
     :param vtk (bool): Default False. Whether or not visualize the model
     :param vtk_path (str): Default None. Path of vtk output directory
+    :param plot_3d_kwargs (dict): kwargs for `gempy.plot_3d`
     :return: gempy.Project
     """
     from gempy.addons.map2gempy import loop2gempy
