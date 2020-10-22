@@ -27,7 +27,8 @@ from map2loop import m2l_utils
 #
 # Creates geomodeller taskfile files from varous map2loop outputs
 ##########################################################################
-def loop2geomodeller(model_name,test_data_path,tmp_path,output_path,dtm_file,bbox,model_top,model_base,save_faults,compute_etc,workflow):
+def loop2geomodeller(model_name,test_data_path,tmp_path,output_path,dtm_file,bbox,
+                     model_top,model_base,save_faults,compute_etc,workflow):
 
     f=open(test_data_path+'/'+model_name+'/m2l.taskfile','w')
     f.write('#---------------------------------------------------------------\n')
@@ -967,231 +968,36 @@ def loop2LoopStructural(m2l_directory):
 #
 # Calculates model and displays in external vtk viewer
 ##########################################################################
-def loop2gempy(test_data_name: str, tmp_path: str, vtk_path: str, orientations_file: str,
-               contacts_file: str, groups_file:str,
-               bbox: tuple, model_base: float, model_top: float, vtk: bool, dtm_reproj_file:str = None,
-               va=None,
-               verbose: bool = False, compute: bool = True):
+def loop2gempy(*args, **kwargs):
+    """ Calculate the model using gempy as backend.
+
+    At the moment there is not support for finite faults since gempy does not
+     accept passing the ellipsoid parameters directly.
+
+    :param contacts_file (str): path of contacts file
+    :param orientations_file: path of orientations file
+    :param bbox: model bounding box
+    :param groups_file: path of groups file
+    :param model_base: z value ofbase of model
+    :param model_top: z value of top of model
+    :param dtm_reproj_file: path of dtm file
+    :param faults_contact: path of contacts file with fault data
+    :param faults_orientations: path of orientations file with fault data
+    :param faults_rel_matrix: bool matrix describing the interaction between groups. Rows offset columns
+    :param faults_groups_rel: bool matrix describing the interaction between faults and features
+    :param faults_faults_rel: bool matrix describing the interaction between faults and faults
+    :param model_name: name of the model
+    :param compute (bool): Default True. Whether or not compute the model
+    :param vtk (bool): Default False. Whether or not visualize the model
+    :param vtk_path (str): Default None. Path of vtk output directory
+    :param plot_3d_kwargs (dict): kwargs for `gempy.plot_3d`
+    :return: gempy.Project
     """
-
-    :param test_data_name:
-    :param tmp_path:
-    :param vtk_path:
-    :param orientations_file:
-    :param contacts_file:
-    :param groups_file:
-    :param bbox:
-    :param model_base:
-    :param model_top:
-    :param vtk:
-    :param dtm_reproj_file:
-    :param va: vertical anisotropy. Factor by which all Z coordinates are multiplied by
-    :param verbose:
-    :param compute:
-    :return:
-    """
-    import gempy as gp
-    from gempy import plot
-
-    geo_model = gp.create_model(test_data_name)
-
-    # If depth coordinates are much smaller than XY the whole system of equations becomes very unstable. Until
-    # I fix it properly in gempy this is a handcrafted hack
-    if va is None:
-        va = (float(bbox[0]) - float(bbox[2])) / (model_base - model_top)/2
-
-        if va < 3:
-            va = 0
-        else:
-            print('The vertical exageration is: ', va)
-
-    gp.init_data(geo_model, extent=[bbox[0], bbox[2], bbox[1], bbox[3], model_base * va, model_top * va],
-                 resolution=(50, 50, 50),
-                 path_o=orientations_file,
-                 path_i=contacts_file)
-
-    geo_model.modify_surface_points(geo_model.surface_points.df.index, Z=geo_model.surface_points.df['Z'] * va)
-
-    if dtm_reproj_file is not None:
-        # Load reprojected topography to model
-
-        fp = dtm_reproj_file
-        geo_model.set_topography(source='gdal', filepath=fp)
-
-        # Rescaling topography:
-        geo_model._grid.topography.values[:, 2] *= va
-        geo_model._grid.update_grid_values()
-        geo_model.update_from_grid()
-
-    # Pile processing:
-    contents = np.genfromtxt(groups_file,
-                             delimiter=',', dtype='U100')
-
-    # Init dictionary Series:Surfaces
-    map_series_to_surfaces = {}
-    choice = 0
-    for group in contents:
-        # Reading surfaces groups
-        surfaces_g = np.atleast_2d(np.genfromtxt(tmp_path + group + '.csv', delimiter=',', dtype='U100'))
-
-        # Check if there are several choices
-        if surfaces_g.shape[1] > 1:
-            surfaces_g = surfaces_g[choice]
-        # Deleting the first element since it is not a surface
-        surfaces_g = surfaces_g[1:]
-        # Creating the mapping dictionary
-        map_series_to_surfaces[group] = surfaces_g.tolist()
-
-    if verbose is True:
-        print(map_series_to_surfaces)
-
-    # Setting pile to model
-    gp.map_series_to_surfaces(geo_model, map_series_to_surfaces, remove_unused_series=False)
-
-    if('Default series' in map_series_to_surfaces):
-
-        #    Removing related data
-        del_surfaces = geo_model.surfaces.df.groupby('series').get_group('Default series')['surface']
-        geo_model.delete_surfaces(del_surfaces, remove_data=True)
-
-        # Removing series that have not been mapped to any surface
-        geo_model.delete_series('Default series')
-
-    if compute is True:
-        gp.set_interpolator(geo_model, theano_optimizer='fast_run', dtype='float64')
-        gp.compute_model(geo_model)
-
-    # Visualise Model
-    #gp.plot.plot_3D(geo_model, render_data=False)
-    p3d = gp.plot_3d(geo_model, plotter_type='background', notebook=False)
-
-    p3d3 = gp.plot_3d(geo_model, notebook=True)
-
-    # Save model as vtk
-    if vtk:
-        gp.plot.export_to_vtk(geo_model, path=vtk_path, name=test_data_name + '.vtk', voxels=False, block=None,
-                              surfaces=True)
-
+    from gempy.addons.map2gempy import loop2gempy
+    geo_model = loop2gempy(*args, **kwargs)
     return geo_model
 
-
-def loop2gempy_(test_data_name, tmp_path, vtk_path, orientations_file, contacts_file, groups_file, dtm_reproj_file,
-                bbox, model_base, model_top, vtk):
-    import gempy as gp
-    from gempy import plot
-    geo_model = gp.create_model(test_data_name)
-
-    # If depth coordinates are much smaller than XY the whole system of equations becomes very unstable. Until
-    # I fix it properly in gempy this is a handcrafted hack
-    ve = (bbox[0] - bbox[2]) / (model_base - model_top)
-
-    if ve < 3:
-        ve = 0
-    else:
-        print('The vertical exageration is: ', ve)
-
-    gp.init_data(geo_model, extent=[bbox[0], bbox[2], bbox[1], bbox[3], model_base*ve, model_top*ve],
-        resolution = (50,50,50),
-          path_o = orientations_file,
-          path_i = contacts_file, default_values=True);
-
-    # Show example lithological points
-    #gp.get_data(geo_model, 'surface_points').head()
-
-    # Show example orientations
-    #gp.get_data(geo_model, 'orientations').head()
-
-    # Plot some of this data
-    #gp.plot.plot_data(geo_model, direction='z')
-
-    geo_model.modify_surface_points(geo_model.surface_points.df.index, Z=geo_model.surface_points.df['Z']*ve)
-
-    # Load reprojected topgraphy to model
-
-    fp = dtm_reproj_file
-    geo_model.set_topography(source='gdal',filepath=fp)
-
-    contents=np.genfromtxt(groups_file,delimiter=',',dtype='U100')
-    ngroups=len(contents)
-
-    faults = gp.Faults()
-    series = gp.Series(faults)
-    #series.df
-
-    #display(ngroups,contents)
-    groups = []
-
-    for i in range (0,ngroups):
-        groups.append(contents[i].replace("\n",""))
-        series.add_series(contents[i].replace("\n",""))
-        print(contents[i].replace("\n",""))
-
-    series.delete_series('Default series')
-
-    #series
-
-    # Load surfaces and assign to series
-    surfaces = gp.Surfaces(series)
-
-    print(ngroups,groups)
-    for i in range(0,ngroups):
-        contents=np.genfromtxt(tmp_path+groups[i]+'.csv',delimiter=',',dtype='U100')
-        nformations=len(contents.shape)
-
-        if(nformations==1):
-            for j in range (1,len(contents)):
-                surfaces.add_surface(str(contents[j]).replace("\n",""))
-                d={groups[i]:str(contents[j]).replace("\n","")}
-                surfaces.map_series({groups[i]:(str(contents[j]).replace("\n",""))}) #working but no gps
-        else:
-            for j in range (1,len(contents[0])):
-                surfaces.add_surface(str(contents[0][j]).replace("\n",""))
-                d={groups[i]:str(contents[0][j]).replace("\n","")}
-                surfaces.map_series({groups[i]:(str(contents[0][j]).replace("\n",""))}) #working but no gps
-
-    # Set Interpolation Data
-    id_only_one_bool = geo_model.surface_points.df['id'].value_counts() == 1
-    id_only_one = id_only_one_bool.index[id_only_one_bool]
-    single_vals = geo_model.surface_points.df[geo_model.surface_points.df['id'].isin(id_only_one)]
-    for idx, vals in single_vals.iterrows():
-        geo_model.add_surface_points(vals['X'], vals['Y'], vals['Z'], vals['surface'])
-
-    geo_model.update_structure()
-
-    gp.set_interpolation_data(geo_model,
-                              compile_theano=True,
-                              theano_optimizer='fast_compile',
-                              verbose=[])
-
-    # Provide summary data on model
-
-    #geo_model.additional_data.structure_data
-
-    #Calculate Model
-    gp.compute_model(geo_model)
-
-    # Extract surfaces to visualize in 3D renderers
-    #gp.plot.plot_section(geo_model, 49, direction='z', show_data=False)
-
-    ver, sim = gp.get_surfaces(geo_model)
-
-    # import winsound
-    # duration = 700  # milliseconds
-    # freq = 1100  # Hz
-    # winsound.Beep(freq, duration)
-    # winsound.Beep(freq, duration)
-    # winsound.Beep(freq, duration)
-
-    #Visualise Model
-    gp.plot.plot_3D(geo_model, render_data=False)
-
-    #Save model as vtk
-    if(vtk):
-        gp.plot.export_to_vtk(geo_model, path=vtk_path, name=test_data_name+'.vtk', voxels=False, block=None, surfaces=True)
-
-    return geo_model
-
-#     Courtesy of https://gist.github.com/delestro/54d5a34676a8cef7477e
+# Courtesy of https://gist.github.com/delestro/54d5a34676a8cef7477e
 
 def rand_cmap(nlabels, type='bright', first_color_black=True, last_color_black=False, verbose=True):
     """
