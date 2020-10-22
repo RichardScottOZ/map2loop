@@ -386,6 +386,7 @@ def save_basal_no_faults(path_out,path_fault,ls_dict,dist_buffer,c_l,dst_crs):
     if(os.path.exists(path_fault)):
         faults_clip_all = gpd.read_file(path_fault)
         faults_clip=faults_clip_all[faults_clip_all[c_l['f']].str.contains(c_l['fault'])]
+        faults_clip=faults_clip.dropna(subset=['geometry'])
 
         df = DataFrame.from_dict(ls_dict, "index")
         contacts = GeoDataFrame(df,crs=dst_crs, geometry='geometry')
@@ -510,6 +511,8 @@ def save_contacts_with_faults_removed(path_fault,path_out,dist_buffer,ls_dict,ls
 
     df = DataFrame.from_dict(ls_dict, "index")
     contacts = GeoDataFrame(df,crs=dst_crs, geometry='geometry')
+    faults_clip=faults_clip.dropna(subset=['geometry'])
+
     fault_zone = faults_clip.buffer(dist_buffer) #defines buffer around faults where strat nodes will be removed
     all_fz = fault_zone.unary_union
     #display(all_fz)
@@ -558,216 +561,242 @@ def save_contacts_with_faults_removed(path_fault,path_out,dist_buffer,ls_dict,ls
 # of faults with their start-finish length that could be used for filtering which faults to include in model.
 #########################################  
 
-def save_faults(path_faults,output_path,dtm,dtb,dtb_null,cover_map,c_l,fault_decimate,fault_min_len,fault_dip):
-    f=open(output_path+'/faults.csv',"w")
+def save_faults(path_faults, output_path, dtm, dtb, dtb_null, cover_map, c_l, fault_decimate, fault_min_len, fault_dip):
+    f = open(output_path+'faults.csv', "w")
     f.write("X,Y,Z,formation\n")
-    fo=open(output_path+'/fault_orientations.csv',"w")
+    fo = open(output_path+'fault_orientations.csv', "w")
     fo.write("X,Y,Z,DipDirection,dip,DipPolarity,formation\n")
-    #fo.write("X,Y,Z,azimuth,dip,polarity,formation\n")
-    fd=open(output_path+'/fault_dimensions.csv',"w")
-    fd.write("Fault,HorizontalRadius,VerticalRadius,InfluenceDistance\n")
-    #fd.write("Fault_ID,strike,dip_direction,down_dip\n")
+    # fo.write("X,Y,Z,azimuth,dip,polarity,formation\n")
+    fd = open(output_path+'fault_dimensions.csv', "w")
+    fd.write("Fault,HorizontalRadius,VerticalRadius,InfluenceDistance,colour\n")
+    # fd.write("Fault_ID,strike,dip_direction,down_dip\n")
     if(os.path.exists(path_faults)):
-        faults_clip=gpd.read_file(path_faults)
-            
-        split=c_l['fdipest_vals'].split(",") #convert text dips to equally spaced angles
-        fault_dip_choices=np.linspace(0,90, len(split)+1)
-        dip_dirs={'north':(0.0,1.0),'northeast':(.707,.707),'east':(1.0,0.0),'southeast':(.707,-.707),
-                  'south':(0.0,-1.0),'southwest':(-.707,-.707),'west':(-1.0,0.0),'northwest':(-.707,.707),
-                  'North':(0.0,1.0),'Northeast':(.707,.707),'East':(1.0,0.0),'Southeast':(.707,-.707),
-                  'South':(0.0,-1.0),'Southwest':(-.707,-.707),'West':(-1.0,0.0),'Northwest':(-.707,.707),
-                  'Unknown':(0.0,1.0),'Vertical':(.707,.707)}
-        
-        
-        for indx,flt in faults_clip.iterrows():
+        faults_clip = gpd.read_file(path_faults)
+        faults_clip=faults_clip.dropna(subset=['geometry'])
+
+        # convert text dips to equally spaced angles
+        split = c_l['fdipest_vals'].split(",")
+        fault_dip_choices = np.linspace(0, 90, len(split)+1)
+        dip_dirs = {'north': (0.0, 1.0), 'northeast': (.707, .707), 'east': (1.0, 0.0), 'southeast': (.707, -.707),
+                    'south': (0.0, -1.0), 'southwest': (-.707, -.707), 'west': (-1.0, 0.0), 'northwest': (-.707, .707),
+                    'North': (0.0, 1.0), 'Northeast': (.707, .707), 'East': (1.0, 0.0), 'Southeast': (.707, -.707),
+                    'South': (0.0, -1.0), 'Southwest': (-.707, -.707), 'West': (-1.0, 0.0), 'Northwest': (-.707, .707),
+                    'Unknown': (0.0, 1.0), 'Vertical': (.707, .707)}
+        random.seed(1)
+        for indx, flt in faults_clip.iterrows():
             if(c_l['fault'] in flt[c_l['f']]):
-                fault_name='Fault_'+str(flt[c_l['o']])
-                #display(flt.geometry.type)
-                if(flt.geometry.type=='LineString'):
-                    flt_ls=LineString(flt.geometry)
-                    dlsx=flt_ls.coords[0][0]-flt_ls.coords[len(flt_ls.coords)-1][0]
-                    dlsy=flt_ls.coords[0][1]-flt_ls.coords[len(flt_ls.coords)-1][1]
-                    strike=sqrt((dlsx*dlsx)+(dlsy*dlsy))
-                    if(strike>fault_min_len):
-                        i=0
-                        saved=0
+                fault_name = 'Fault_'+str(flt[c_l['o']])
+                # display(flt.geometry.type)
+                if(flt.geometry.type == 'LineString'):
+                    flt_ls = LineString(flt.geometry)
+                    dlsx = flt_ls.coords[0][0] - \
+                        flt_ls.coords[len(flt_ls.coords)-1][0]
+                    dlsy = flt_ls.coords[0][1] - \
+                        flt_ls.coords[len(flt_ls.coords)-1][1]
+                    strike = sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                    if(strike > fault_min_len):
+                        i = 0
+                        saved = 0
                         for afs in flt_ls.coords:
-                            if(m2l_utils.mod_safe(i,fault_decimate)==0 or i==int((len(flt_ls.coords)-1)/2) or i==len(flt_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape                         
-                                if(saved==0):
-                                    p1x=afs[0]
-                                    p1y=afs[1]
-                                elif(saved==1):
-                                    p2x=afs[0]
-                                    p2y=afs[1]
-                                elif(saved==2):
-                                    p3x=afs[0]
-                                    p3y=afs[1]
+                            # decimate to reduce number of points, but also take mid and end points of a series to keep some shape
+                            if(m2l_utils.mod_safe(i, fault_decimate) == 0 or i == int((len(flt_ls.coords)-1)/2) or i == len(flt_ls.coords)-1):
+                                if(saved == 0):
+                                    p1x = afs[0]
+                                    p1y = afs[1]
+                                elif(saved == 1):
+                                    p2x = afs[0]
+                                    p2y = afs[1]
+                                elif(saved == 2):
+                                    p3x = afs[0]
+                                    p3y = afs[1]
                                     # avoids narrow angles in fault traces which geomodeller refuses to solve
                                     # should really split fault in two at apex, but life is too short
-                                    if(m2l_utils.tri_angle(p2x,p2y,p1x,p1y,p3x,p3y)<45.0): 
+                                    if(m2l_utils.tri_angle(p2x, p2y, p1x, p1y, p3x, p3y) < 45.0):
                                         break
-                                elif(saved>2):
-                                    p1x=p2x
-                                    p1y=p2y
-                                    p2x=p3x
-                                    p2y=p3y
-                                    p3x=afs[0]
-                                    p3y=afs[1]
+                                elif(saved > 2):
+                                    p1x = p2x
+                                    p1y = p2y
+                                    p2x = p3x
+                                    p2y = p3y
+                                    p3x = afs[0]
+                                    p3y = afs[1]
                                     # avoids narrow angles in fault traces which geomodeller refuses to solve
                                     # should really split fault in two at apex, but life is too short
-                                    if(m2l_utils.tri_angle(p2x,p2y,p1x,p1y,p3x,p3y)<45.0):
-                                        break 
-                                saved=saved+1
-                                locations=[(afs[0],afs[1])]     
-                                height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                    if(m2l_utils.tri_angle(p2x, p2y, p1x, p1y, p3x, p3y) < 45.0):
+                                        break
+                                saved = saved+1
+                                locations = [(afs[0], afs[1])]
+                                height = m2l_utils.value_from_dtm_dtb(
+                                    dtm, dtb, dtb_null, cover_map, locations)
                                 # slightly randomise first and last points to avoid awkward quadruple junctions etc.
-                                #if(i==0 or i==len(flt_ls.coords)-1):
+                                # if(i==0 or i==len(flt_ls.coords)-1):
                                 #    ostr=str(afs[0]+np.random.ranf())+","+str(afs[1]+np.random.ranf())+","+str(height)+","+fault_name+"\n"
-                                #else:
-                                ostr="{},{},{},{}\n"\
-                                     .format(afs[0],afs[1],height,fault_name)
-                                #ostr=str(afs[0])+","+str(afs[1])+","+str(height)+","+fault_name+"\n"                            
-                                f.write(ostr)                
-                            i=i+1  
-                        if(dlsx==0.0 or dlsy == 0.0):
+                                # else:
+                                ostr = "{},{},{},{}\n"\
+                                    .format(afs[0], afs[1], height, fault_name)
+                                # ostr=str(afs[0])+","+str(afs[1])+","+str(height)+","+fault_name+"\n"
+                                f.write(ostr)
+                            i = i+1
+                        if(dlsx == 0.0 or dlsy == 0.0):
                             continue
-                        lsx=dlsx/sqrt((dlsx*dlsx)+(dlsy*dlsy))
-                        lsy=dlsy/sqrt((dlsx*dlsx)+(dlsy*dlsy))        
-                        azimuth=degrees(atan2(lsy,-lsx)) % 180 #normal to line segment           
-                        locations=[(flt_ls.coords[int((len(afs)-1)/2)][0],flt_ls.coords[int((len(afs)-1)/2)][1])]     
-                        height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                        
-                        if(flt[c_l['o']]=='-1'):
-                            print(flt[c_l['o']],c_l['fdip'],flt[c_l['fdip']],c_l['fdipnull'],c_l['fdipest'],
-                              flt[c_l['fdipest']],c_l['fdipest_vals'])
-                        
-                        if(flt[c_l['fdip']]==c_l['fdipnull']): # null specifc dip defined
-                            if(not str(flt[c_l['fdipest']])=='None'): #  dip estimate defined
-                                i=0
+                        lsx = dlsx/sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                        lsy = dlsy/sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                        # normal to line segment
+                        azimuth = degrees(atan2(lsy, -lsx)) % 180
+                        locations = [
+                            (flt_ls.coords[int((len(afs)-1)/2)][0], flt_ls.coords[int((len(afs)-1)/2)][1])]
+                        height = m2l_utils.value_from_dtm_dtb(
+                            dtm, dtb, dtb_null, cover_map, locations)
+
+                        if(flt[c_l['o']] == '-1'):
+                            print(flt[c_l['o']], c_l['fdip'], flt[c_l['fdip']], c_l['fdipnull'], c_l['fdipest'],
+                                  flt[c_l['fdipest']], c_l['fdipest_vals'])
+
+                        if(flt[c_l['fdip']] == c_l['fdipnull']):  # null specifc dip defined
+                            # dip estimate defined
+                            if(not str(flt[c_l['fdipest']]) == 'None'):
+                                i = 0
                                 for choice in split:
-                                    if(flt[c_l['o']]=='-1'):
+                                    if(flt[c_l['o']] == '-1'):
                                         print(choice)
                                     if(choice == flt[c_l['fdipest']]):
-                                        fault_dip=int(fault_dip_choices[i+1])
-                                        if(flt[c_l['o']]=='-1'):
-                                            print('found_dip',fault_dip)
-                                    i=i+1
+                                        fault_dip = int(fault_dip_choices[i+1])
+                                        if(flt[c_l['o']] == '-1'):
+                                            print('found_dip', fault_dip)
+                                    i = i+1
                             else:
-                                if(fault_dip == -999): # random flag
-                                    fault_dip=random.randint(60,90)
+                                if(fault_dip == -999):  # random flag
+                                    fault_dip = random.randint(60, 90)
                         else:
-                            fault_dip=int(flt[c_l['fdip']]) # specific dip defined
-                        
-                        if(c_l['fdipdir_flag']=='num'): # numeric dip direction defined
-                            azimuth=flt[c_l['fdipdir']]
-                        elif(not str(flt[c_l['fdipdir']])=='None' and not flt[c_l['fdip']]== c_l['fdipnull'] ): # alpha dip direction defined
-                            dotprod=degrees(acos((-lsx*dip_dirs[flt[c_l['fdipdir']]][0])+(lsy*dip_dirs[flt[c_l['fdipdir']]][1])))
-                            if(dotprod>45):
-                                fault_dip=-fault_dip
-    
-                            
-                        ostr="{},{},{},{},{},{},{}\n"\
-                             .format(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0],flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1],
-                                     height,azimuth,fault_dip,1,fault_name)
-                        #ostr=str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0])+","+str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1])+","+height+","+str(azimuth)+","+str(fault_dip)+",1,"+fault_name+"\n"
+                            # specific dip defined
+                            fault_dip = int(flt[c_l['fdip']])
+
+                        if(c_l['fdipdir_flag'] == 'num'):  # numeric dip direction defined
+                            azimuth = flt[c_l['fdipdir']]
+                        # alpha dip direction defined
+                        elif(not str(flt[c_l['fdipdir']]) == 'None' and not flt[c_l['fdip']] == c_l['fdipnull']):
+                            dotprod = degrees(acos(
+                                (-lsx*dip_dirs[flt[c_l['fdipdir']]][0])+(lsy*dip_dirs[flt[c_l['fdipdir']]][1])))
+                            if(dotprod > 45):
+                                fault_dip = -fault_dip
+
+                        ostr = "{},{},{},{},{},{},{}\n"\
+                            .format(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0], flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1],
+                                    height, azimuth, fault_dip, 1, fault_name)
+                        # ostr=str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0])+","+str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1])+","+height+","+str(azimuth)+","+str(fault_dip)+",1,"+fault_name+"\n"
                         fo.write(ostr)
-                        strike=strike*1.25
-                        ostr="{},{},{},{}\n"\
-                             .format(fault_name,strike/2,strike,strike/4.0)
-                        #ostr=fault_name+","+str(strike/2)+","+str(strike)+","+str(strike/4.0)+"\n"
+                        strike = strike*1.25
+                        r = random.randint(1, 256)-1
+                        g = random.randint(1, 256)-1
+                        b = random.randint(1, 256)-1
+                        hex_rgb = m2l_utils.intstohex((r, g, b))
+
+                        ostr = "{},{},{},{},{}\n"\
+                            .format(fault_name, strike/2, strike/2, strike/4.0,hex_rgb)
+                        # ostr=fault_name+","+str(strike/2)+","+str(strike)+","+str(strike/4.0)+"\n"
                         fd.write(ostr)
-                elif(flt.geometry.type=='MultiLineString' or flt.geometry.type=='GeometryCollection' ): #shouldn't happen any more
-                    sum_strike=0
-                    first=True
+                # shouldn't happen any more
+                elif(flt.geometry.type == 'MultiLineString' or flt.geometry.type == 'GeometryCollection'):
+                    sum_strike = 0
+                    first = True
                     for pline in flt.geometry:
-                        flt_ls=LineString(pline)
-                        dlsx=flt_ls.coords[0][0]-flt_ls.coords[len(flt_ls.coords)-1][0]
-                        dlsy=flt_ls.coords[0][1]-flt_ls.coords[len(flt_ls.coords)-1][1]
-                        sum_strike=sum_strike+sqrt((dlsx*dlsx)+(dlsy*dlsy))  
+                        flt_ls = LineString(pline)
+                        dlsx = flt_ls.coords[0][0] - \
+                            flt_ls.coords[len(flt_ls.coords)-1][0]
+                        dlsy = flt_ls.coords[0][1] - \
+                            flt_ls.coords[len(flt_ls.coords)-1][1]
+                        sum_strike = sum_strike+sqrt((dlsx*dlsx)+(dlsy*dlsy))
                         if(first):
-                            firstx=flt_ls.coords[0][0]
-                            firsty=flt_ls.coords[0][1]
-                        lastx=flt_ls.coords[0][0]
-                        lasty=flt_ls.coords[0][1]
-                    ostr="{},{},{},{}\n"\
-                             .format(fault_name,sum_strike/2,sum_strike,sum_strike/4.0)    
-                    #ostr=fault_name+","+str(sum_strike/2)+","+str(sum_strike)+","+str(sum_strike/4.0)+"\n"
-                    fd.write(ostr) 
-                                   
-                    dlsx=firstx-lastx
-                    dlsy=firsty-lasty
-                    if(dlsx==0.0 or dlsy == 0.0):
-                            continue            
-    
-                    lsx=dlsx/sqrt((dlsx*dlsx)+(dlsy*dlsy))
-                    lsy=dlsy/sqrt((dlsx*dlsx)+(dlsy*dlsy))        
-                    azimuth=degrees(atan2(lsy,-lsx)) % 180 #normal to line segment           
-                    locations=[(flt_ls.coords[int((len(afs)-1)/2)][0],flt_ls.coords[int((len(afs)-1)/2)][1])]     # should be mid-fault not mid fault segemnt but probs doesnt matter
-                    height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                    ostr="{},{},{},{},{},{},{},\n"\
-                             .format(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0],flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1],height,azimuth,fault_dip,1,fault_name)
-                    #ostr=str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0])+","+str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1])+","+height+","+str(azimuth)+","+str(fault_dip)+",1,"+fault_name+"\n"
+                            firstx = flt_ls.coords[0][0]
+                            firsty = flt_ls.coords[0][1]
+                        lastx = flt_ls.coords[0][0]
+                        lasty = flt_ls.coords[0][1]
+                    ostr = "{},{},{},{}\n"\
+                        .format(fault_name, sum_strike/2, sum_strike, sum_strike/4.0)
+                    # ostr=fault_name+","+str(sum_strike/2)+","+str(sum_strike)+","+str(sum_strike/4.0)+"\n"
+                    fd.write(ostr)
+
+                    dlsx = firstx-lastx
+                    dlsy = firsty-lasty
+                    if(dlsx == 0.0 or dlsy == 0.0):
+                        continue
+
+                    lsx = dlsx/sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                    lsy = dlsy/sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                    # normal to line segment
+                    azimuth = degrees(atan2(lsy, -lsx)) % 180
+                    # should be mid-fault not mid fault segemnt but probs doesnt matter
+                    locations = [(flt_ls.coords[int((len(afs)-1)/2)]
+                                  [0], flt_ls.coords[int((len(afs)-1)/2)][1])]
+                    height = m2l_utils.value_from_dtm_dtb(
+                        dtm, dtb, dtb_null, cover_map, locations)
+                    ostr = "{},{},{},{},{},{},{},\n"\
+                        .format(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0], flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1], height, azimuth, fault_dip, 1, fault_name)
+                    # ostr=str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][0])+","+str(flt_ls.coords[int((len(flt_ls.coords)-1)/2)][1])+","+height+","+str(azimuth)+","+str(fault_dip)+",1,"+fault_name+"\n"
                     fo.write(ostr)
-    
+
                     for pline in flt.geometry:
-                        #display(pline)
-                        #display(flt)
-                        flt_ls=LineString(pline)
-                        dlsx=flt_ls.coords[0][0]-flt_ls.coords[len(flt_ls.coords)-1][0]
-                        dlsy=flt_ls.coords[0][1]-flt_ls.coords[len(flt_ls.coords)-1][1]
-                        if(dlsx==0.0 or dlsy == 0.0):
+                        # display(pline)
+                        # display(flt)
+                        flt_ls = LineString(pline)
+                        dlsx = flt_ls.coords[0][0] - \
+                            flt_ls.coords[len(flt_ls.coords)-1][0]
+                        dlsy = flt_ls.coords[0][1] - \
+                            flt_ls.coords[len(flt_ls.coords)-1][1]
+                        if(dlsx == 0.0 or dlsy == 0.0):
                             continue
-                      
-                        if(sum_strike>fault_min_len):
-                            i=0
-                            saved=0
+
+                        if(sum_strike > fault_min_len):
+                            i = 0
+                            saved = 0
                             for afs in flt_ls.coords:
-                                if(m2l_utils.mod_safe(i,fault_decimate)==0 or i==int((len(flt_ls.coords)-1)/2) or i==len(flt_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape                         
-                                    if(saved==0):
-                                        p1x=afs[0]
-                                        p1y=afs[1]
-                                    elif(saved==1):
-                                        p2x=afs[0]
-                                        p2y=afs[1]
-                                    elif(saved==2):
-                                        p3x=afs[0]
-                                        p3y=afs[1]
+                                # decimate to reduce number of points, but also take mid and end points of a series to keep some shape
+                                if(m2l_utils.mod_safe(i, fault_decimate) == 0 or i == int((len(flt_ls.coords)-1)/2) or i == len(flt_ls.coords)-1):
+                                    if(saved == 0):
+                                        p1x = afs[0]
+                                        p1y = afs[1]
+                                    elif(saved == 1):
+                                        p2x = afs[0]
+                                        p2y = afs[1]
+                                    elif(saved == 2):
+                                        p3x = afs[0]
+                                        p3y = afs[1]
                                         # avoids narrow angles in fault traces which geomodeller refuses to solve
                                         # should really split fault in two at apex, but life is too short
-                                        if(m2l_utils.tri_angle(p2x,p2y,p1x,p1y,p3x,p3y)<45.0): 
+                                        if(m2l_utils.tri_angle(p2x, p2y, p1x, p1y, p3x, p3y) < 45.0):
                                             break
-                                    elif(saved>2):
-                                        p1x=p2x
-                                        p1y=p2y
-                                        p2x=p3x
-                                        p2y=p3y
-                                        p3x=afs[0]
-                                        p3y=afs[1]
+                                    elif(saved > 2):
+                                        p1x = p2x
+                                        p1y = p2y
+                                        p2x = p3x
+                                        p2y = p3y
+                                        p3x = afs[0]
+                                        p3y = afs[1]
                                         # avoids narrow angles in fault traces which geomodeller refuses to solve
                                         # should really split fault in two at apex, but life is too short
-                                        if(m2l_utils.tri_angle(p2x,p2y,p1x,p1y,p3x,p3y)<45.0):
-                                            break 
-                                    saved=saved+1
-                                    locations=[(afs[0],afs[1])]     
-                                    height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                        if(m2l_utils.tri_angle(p2x, p2y, p1x, p1y, p3x, p3y) < 45.0):
+                                            break
+                                    saved = saved+1
+                                    locations = [(afs[0], afs[1])]
+                                    height = m2l_utils.value_from_dtm_dtb(
+                                        dtm, dtb, dtb_null, cover_map, locations)
                                     # slightly randomise first and last points to avoid awkward quadruple junctions etc.
-                                    #if(i==0 or i==len(flt_ls.coords)-1):
+                                    # if(i==0 or i==len(flt_ls.coords)-1):
                                     #    ostr=str(afs[0]+np.random.ranf())+","+str(afs[1]+np.random.ranf())+","+str(height)+","+fault_name+"\n"
-                                    #else:
-                                    ostr="{},{},{},{}\n"\
-                                         .format(afs[0],afs[1],height,fault_name)
-                                    #ostr=str(afs[0])+","+str(afs[1])+","+str(height)+","+fault_name+"\n"                            
-                                    f.write(ostr)                
-                                i=i+1  
-    
+                                    # else:
+                                    ostr = "{},{},{},{}\n"\
+                                        .format(afs[0], afs[1], height, fault_name)
+                                    # ostr=str(afs[0])+","+str(afs[1])+","+str(height)+","+fault_name+"\n"
+                                    f.write(ostr)
+                                i = i+1
 
     f.close()
     fo.close()
     fd.close()
-    print("fault orientations saved as",output_path+'fault_orientations.csv')
-    print("fault positions saved as",output_path+'faults.csv')
-    print("fault dimensions saved as",output_path+'fault_dimensions.csv')
-
+    print("fault orientations saved as", output_path+'fault_orientations.csv')
+    print("fault positions saved as", output_path+'faults.csv')
+    print("fault dimensions saved as", output_path+'fault_dimensions.csv')
+    random.seed()
     
 #########################################
 # Save faults as contact info and make vertical (for the moment)
@@ -842,12 +871,28 @@ def save_fold_axial_traces(path_folds,path_fold_orientations,dtm,dtb,dtb_null,co
     folds_clip=gpd.read_file(path_folds)
     fo=open(path_fold_orientations+'/fold_axial_traces.csv',"w")
     fo.write("X,Y,Z,code,type\n")
+    folds_clip=folds_clip.dropna(subset=['geometry'])
 
     for indx,fold in folds_clip.iterrows():
         fold_name=str(fold[c_l['o']])
-        if(fold.geometry.type=='MultiLineString'):
-            for mls in fold.geometry:
-                fold_ls=LineString(mls)
+        if(not str(fold.geometry.type)=='None'):
+            if(fold.geometry.type=='MultiLineString'):
+                for mls in fold.geometry:
+                    fold_ls=LineString(mls)
+
+                    i=0
+                    for afs in fold_ls.coords:
+                        if(c_l['fold'] in fold[c_l['ff']]):
+                            if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
+                                locations=[(afs[0],afs[1])]     
+                                height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                ostr="{},{},{},FA_{},{}\n"\
+                                    .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
+                                #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
+                                fo.write(ostr)                
+                        i=i+1  
+            else:
+                fold_ls=LineString(fold.geometry)
 
                 i=0
                 for afs in fold_ls.coords:
@@ -856,24 +901,10 @@ def save_fold_axial_traces(path_folds,path_fold_orientations,dtm,dtb,dtb_null,co
                             locations=[(afs[0],afs[1])]     
                             height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
                             ostr="{},{},{},FA_{},{}\n"\
-                                 .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
+                                .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
                             #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
                             fo.write(ostr)                
                     i=i+1  
-        else:
-            fold_ls=LineString(fold.geometry)
-
-            i=0
-            for afs in fold_ls.coords:
-                if(c_l['fold'] in fold[c_l['ff']]):
-                    if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
-                        locations=[(afs[0],afs[1])]     
-                        height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                        ostr="{},{},{},FA_{},{}\n"\
-                              .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
-                        #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
-                        fo.write(ostr)                
-                i=i+1  
 
     fo.close()
     print("fold axial traces saved as",path_fold_orientations+'fold_axial_traces.csv')
@@ -1479,7 +1510,8 @@ def tidy_data(output_path,tmp_path,clut_path,use_group,use_interpolations,use_fa
         if( c_l['c']=='CODE'):
             code=c_l['c'].lower()
         else:
-            code=c_l['c']
+            code='UNITNAME'
+            #code=c_l['c']
             
         asc2=pd.merge(asc, colours, how='inner',  left_on='code', right_on=code)
         asc2.drop(['UNITNAME'], axis=1,inplace=True)
@@ -1919,16 +1951,84 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
     f=open(output_path+'fold_axial_trace_orientations2.csv','w')
     f.write('X,Y,Z,azimuth,dip,polarity,formation,group\n')
     folds_clip=gpd.read_file(path_folds,)
+    folds_clip=folds_clip.dropna(subset=['geometry'])
     fo=open(output_path+'fold_axial_traces.csv',"w")
     fo.write("X,Y,Z,code,type\n")
     dummy=[]
     dummy.append(1)
     for indx,fold in folds_clip.iterrows():
         fold_name=str(fold[c_l['o']])   
-        if(fold.geometry.type=='MultiLineString'):
-            for mls in fold.geometry:              
-                fold_ls=LineString(mls)        
+        if(not str(fold.geometry.type)=='None'):
+            if(fold.geometry.type=='MultiLineString'):
+                for mls in fold.geometry:              
+                    fold_ls=LineString(mls)        
 
+                    i=0
+                    first=True
+                    for afs in fold_ls.coords:
+                        if(c_l['fold'] in fold[c_l['ff']]):
+                            # save out current geometry of FAT
+                            if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
+                                locations=[(afs[0],afs[1])]                  
+                                height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                ostr="{},{},{},FA_{},{}\n"\
+                                    .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
+                                #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
+                                fo.write(ostr)  
+                                # calculate FAT normal offsets  
+                                if(not first):
+                                    l,m=m2l_utils.pts2dircos(lastx,lasty,afs[0],afs[1])
+                                    midx=lastx+((afs[0]-lastx)/2)
+                                    midy=lasty+((afs[1]-lasty)/2)
+                                    midxr=midx+(fat_step*-m)
+                                    midyr=midy+(fat_step*l)
+                                    midxl=midx-(fat_step*-m)
+                                    midyl=midy-(fat_step*l)
+                                    r=int((midy-bbox[1])/spacing)
+                                    c=int((midx-bbox[0])/spacing)
+                                    if(close_dip==-999):
+                                        dip=dip_grid[r,c]
+                                    else:
+                                        dip=close_dip
+                                    dip_dir=dip_dir_grid[r,c]
+                                    
+                                    dip2,dipdir2=m2l_utils.dircos2ddd(-m,l,cos(radians(dip)))
+                                    if(c_l['syn'] in fold[c_l['t']]):
+                                        dipdir2=dipdir2+180
+
+                                    lc=sin(radians(dip_dir-90))
+                                    mc=cos(radians(dip_dir-90))
+                                    dotprod=fabs((l*lc)+(m*mc))
+                                    #print(dotprod,midx,midy,minind,contacts[minind,2],l,m,lc,mc)   
+                                    # if FAT is sub-parallel to local interpolated contacts, save out as orientations  
+                                    if(dotprod>0.85):
+                                        geometry = [Point(midxr,midyr)]
+                                        gdf = GeoDataFrame(dummy, crs=dst_crs, geometry=geometry)
+                                        structure_code = gpd.sjoin(gdf, geology, how="left", op="within")
+                                        if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
+                                            locations=[(midxr,midyr)]                  
+                                            height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                            ostr="{},{},{},{},{},{},{},{}\n"\
+                                                .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                            #ostr=str(midxr)+','+str(midyr)+','+str(height)+','+str(dipdir)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
+                                            f.write(ostr)
+                                        
+                                        geometry = [Point(midxl,midyl)]
+                                        gdf = GeoDataFrame(dummy, crs=dst_crs, geometry=geometry)
+                                        structure_code = gpd.sjoin(gdf, geology, how="left", op="within")
+                                        if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
+                                            locations=[(midxl,midyl)]                  
+                                            height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
+                                            ostr="{},{},{},{},{},{},{},{}\n"\
+                                                .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                            #ostr=str(midxl)+','+str(midyl)+','+str(height)+','+str(dipdir+180)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
+                                            f.write(ostr)
+                                first=False
+                                lastx=afs[0]
+                                lasty=afs[1]
+                        i=i+1  
+            else:
+                fold_ls=LineString(fold.geometry)
                 i=0
                 first=True
                 for afs in fold_ls.coords:
@@ -1938,7 +2038,7 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                             locations=[(afs[0],afs[1])]                  
                             height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
                             ostr="{},{},{},FA_{},{}\n"\
-                                  .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
+                                .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
                             #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
                             fo.write(ostr)  
                             # calculate FAT normal offsets  
@@ -1956,14 +2056,12 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                     dip=dip_grid[r,c]
                                 else:
                                     dip=close_dip
-                                dip_dir=dip_dir_grid[r,c]
-                                
+                                dipdir=dip_dir_grid[r,c]
                                 dip2,dipdir2=m2l_utils.dircos2ddd(-m,l,cos(radians(dip)))
                                 if(c_l['syn'] in fold[c_l['t']]):
                                     dipdir2=dipdir2+180
-
-                                lc=sin(radians(dip_dir-90))
-                                mc=cos(radians(dip_dir-90))
+                                lc=sin(radians(dipdir-90))
+                                mc=cos(radians(dipdir-90))
                                 dotprod=fabs((l*lc)+(m*mc))
                                 #print(dotprod,midx,midy,minind,contacts[minind,2],l,m,lc,mc)   
                                 # if FAT is sub-parallel to local interpolated contacts, save out as orientations  
@@ -1975,7 +2073,7 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                         locations=[(midxr,midyr)]                  
                                         height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
                                         ostr="{},{},{},{},{},{},{},{}\n"\
-                                              .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                            .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
                                         #ostr=str(midxr)+','+str(midyr)+','+str(height)+','+str(dipdir)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                         f.write(ostr)
                                     
@@ -1986,77 +2084,13 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                         locations=[(midxl,midyl)]                  
                                         height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
                                         ostr="{},{},{},{},{},{},{},{}\n"\
-                                              .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                            .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
                                         #ostr=str(midxl)+','+str(midyl)+','+str(height)+','+str(dipdir+180)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                         f.write(ostr)
                             first=False
                             lastx=afs[0]
                             lasty=afs[1]
                     i=i+1  
-        else:
-            fold_ls=LineString(fold.geometry)
-            i=0
-            first=True
-            for afs in fold_ls.coords:
-                if(c_l['fold'] in fold[c_l['ff']]):
-                    # save out current geometry of FAT
-                    if(m2l_utils.mod_safe(i,fold_decimate)==0 or i==int((len(fold_ls.coords)-1)/2) or i==len(fold_ls.coords)-1): #decimate to reduce number of points, but also take mid and end points of a series to keep some shape
-                        locations=[(afs[0],afs[1])]                  
-                        height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                        ostr="{},{},{},FA_{},{}\n"\
-                              .format(afs[0],afs[1],height,fold_name,fold[c_l['t']].replace(',',''))
-                        #ostr=str(afs[0])+','+str(afs[1])+','+str(height)+','+'FA_'+fold_name+','+fold[c_l['t']].replace(',','')+'\n'
-                        fo.write(ostr)  
-                        # calculate FAT normal offsets  
-                        if(not first):
-                            l,m=m2l_utils.pts2dircos(lastx,lasty,afs[0],afs[1])
-                            midx=lastx+((afs[0]-lastx)/2)
-                            midy=lasty+((afs[1]-lasty)/2)
-                            midxr=midx+(fat_step*-m)
-                            midyr=midy+(fat_step*l)
-                            midxl=midx-(fat_step*-m)
-                            midyl=midy-(fat_step*l)
-                            r=int((midy-bbox[1])/spacing)
-                            c=int((midx-bbox[0])/spacing)
-                            if(close_dip==-999):
-                                dip=dip_grid[r,c]
-                            else:
-                                dip=close_dip
-                            dipdir=dip_dir_grid[r,c]
-                            dip2,dipdir2=m2l_utils.dircos2ddd(-m,l,cos(radians(dip)))
-                            if(c_l['syn'] in fold[c_l['t']]):
-                                dipdir2=dipdir2+180
-                            lc=sin(radians(dipdir-90))
-                            mc=cos(radians(dipdir-90))
-                            dotprod=fabs((l*lc)+(m*mc))
-                            #print(dotprod,midx,midy,minind,contacts[minind,2],l,m,lc,mc)   
-                            # if FAT is sub-parallel to local interpolated contacts, save out as orientations  
-                            if(dotprod>0.85):
-                                geometry = [Point(midxr,midyr)]
-                                gdf = GeoDataFrame(dummy, crs=dst_crs, geometry=geometry)
-                                structure_code = gpd.sjoin(gdf, geology, how="left", op="within")
-                                if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
-                                    locations=[(midxr,midyr)]                  
-                                    height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                    ostr="{},{},{},{},{},{},{},{}\n"\
-                                          .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
-                                    #ostr=str(midxr)+','+str(midyr)+','+str(height)+','+str(dipdir)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
-                                    f.write(ostr)
-                                
-                                geometry = [Point(midxl,midyl)]
-                                gdf = GeoDataFrame(dummy, crs=dst_crs, geometry=geometry)
-                                structure_code = gpd.sjoin(gdf, geology, how="left", op="within")
-                                if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
-                                    locations=[(midxl,midyl)]                  
-                                    height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                    ostr="{},{},{},{},{},{},{},{}\n"\
-                                          .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
-                                    #ostr=str(midxl)+','+str(midyl)+','+str(height)+','+str(dipdir+180)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
-                                    f.write(ostr)
-                        first=False
-                        lastx=afs[0]
-                        lasty=afs[1]
-                i=i+1  
     
     fo.close()
     f.close()
@@ -2688,3 +2722,104 @@ def save_basal_contacts_orientations_csv(contacts,orientations,geol_clip,tmp_pat
                     i=i+1   
     f.close()
 
+def process_sills(output_path,geol_clip,dtm,dtb,dtb_null,cover_map,contact_decimate,c_l,dip_grid,x,y,spacing,bbox,buffer):
+    
+    sills=geol_clip[geol_clip[c_l['ds']].str.contains(c_l['sill'])]
+    sills=sills[sills[c_l['r1']].str.contains(c_l['intrusive'])]
+    
+    sill_dict = {}
+    i=0
+    for ind,sill in sills.iterrows():
+        for ind2,geol in geol_clip.iterrows():
+            if(geol[c_l['o']] != sill[c_l['o']]):
+                if (geol.geometry.intersects(sill.geometry)):
+                    LineStringC = geol.geometry.intersection(sill.geometry)
+                    if(LineStringC.wkt.split(" ")[0] == 'MULTIPOLYGON' or
+                       LineStringC.wkt.split(" ")[0] == 'POLYGON'):  # ignore polygon intersections for now, worry about them later!
+                        print(ageol[c_l['o']], "debug:",
+                              LineStringC.geometry.type)
+                        continue
+
+                    elif(LineStringC.wkt.split(" ")[0] == 'MULTILINESTRING' or LineStringC.wkt.split(" ")[0] == 'GEOMETRYCOLLECTION'):
+                        k = 0
+                        for lineC in LineStringC:  # process all linestrings
+                            first=True
+                            if(lineC.wkt.split(" ")[0] == 'LINESTRING'):
+                                # decimate to reduce number of points, but also take second and third point of a series to keep gempy happy
+                                if(m2l_utils.mod_safe(k, contact_decimate) == 0 or k == int((len(LineStringC)-1)/2) or k == len(LineStringC)-1):
+                                    # doesn't like point right on edge?
+
+                                    locations = [
+                                        (lineC.coords[0][0], lineC.coords[0][1])]
+                                    if(lineC.coords[0][0] > dtm.bounds[0] and lineC.coords[0][0] < dtm.bounds[2] and
+                                       lineC.coords[0][1] > dtm.bounds[1] and lineC.coords[0][1] < dtm.bounds[3]):
+                                        height = m2l_utils.value_from_dtm_dtb(
+                                            dtm, dtb, dtb_null, cover_map, locations)
+                                        
+
+                                        dlsx = lineC.coords[0][0] - lineC.coords[1][0]
+                                        dlsy = lineC.coords[0][1] - lineC.coords[1][1]
+                                        lsx = dlsx / sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                                        lsy = dlsy / sqrt((dlsx*dlsx)+(dlsy*dlsy))
+                                        
+                                        azimuth = (180+degrees(atan2(lsy, -lsx))) % 360
+                                        
+                                        # pt just a bit in/out from line
+                                        testpx = lineC.coords[0][0]-lsy
+                                        testpy = lineC.coords[0][0]+lsx
+
+                                        midx=lineC.coords[0][0]+((lineC.coords[1][0] - lineC.coords[0][0])/2)
+                                        midy=lineC.coords[0][1]+((lineC.coords[1][1] - lineC.coords[0][1])/2)
+                                        midpoint=Point(midx,midy)
+                                        dx1=-lsy*buffer
+                                        dy1=lsx*buffer
+                                        dx2=-dx1
+                                        dy2=-dy1
+
+                                        if(sill.geometry.type == 'Polygon'):
+                                            if Polygon(sill.geometry).contains(Point(testpx, testpy)):
+                                                azimuth = (azimuth-180) % 360
+                                        else:
+                                            if MultiPolygon(sill.geometry).contains(Point(testpx, testpy)):
+                                                azimuth = (azimuth-180) % 360                                    
+
+                                        p1=Point(midx+lsy,midy-lsx)
+                                        p2=Point((midx+dx2,midy+dy2))
+                                                
+                                        r=int((midy-bbox[1])/spacing)
+                                        c=int((midx-bbox[0])/spacing)
+
+                                        dip_mean=dip_grid[r,c]
+                                        ddline=LineString((p1,p2))
+                                        #print(ddline,midpoint)
+                                        if(ddline.intersects(sill.geometry)): 
+                                            isects=ddline.intersection(sill.geometry)                                        
+                                            if(isects.geom_type=="MultiLineString"):
+                                                min_dist=1e9
+                                                for line in isects: 
+                                                    app_thickness=m2l_utils.ptsdist(line.coords[1][0],line.coords[1][1],midx,midy)
+                                                    if(app_thickness<buffer*2):
+                                                        if(min_dist>app_thickness):
+                                                            min_dist=app_thickness
+                                                app_thickness=min_dist
+                                                est_thickness=app_thickness*sin(radians(dip_mean))
+                                                
+                                            else:
+                                                #print(isects)
+                                                app_thickness=m2l_utils.ptsdist(isects.coords[1][0],isects.coords[1][1],midx,midy)
+                                                if(app_thickness<buffer*2):
+                                                    est_thickness=app_thickness*sin(radians(dip_mean))
+                                        else:
+                                            app_thickness=-999
+                                            est_thickness=-999
+
+                                        sill_dict[i] ={"X":lineC.coords[0][0],"Y": lineC.coords[0][1], "Z":height, "sill_code":sill[c_l['c']],"host_code":geol[c_l['c']],"outwards":azimuth,"apparent thickness":app_thickness,"true thickness":est_thickness}
+                                        i=i+1
+                                    else:
+                                        continue
+
+
+                                k += 1
+
+    sills_df=pd.DataFrame.from_dict(sill_dict,orient='index')
+    sills_df.to_csv(output_path+'sills.csv')

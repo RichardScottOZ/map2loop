@@ -65,6 +65,11 @@ def value_from_raster(dataset,locations):
     else:
         return(-999)
 
+#################################
+#  Maybe use https://portal.opentopography.org/otr/getdem?demtype=SRTMGL3&west=-120.168457&south=36.738884&east=-118.465576&north=38.091337&outputFormat=GTiff as univeral solution?
+# or SRTMGL1 for higher res probs not needed
+#################################
+
 ############################################
 # get value from two rasterio rasters (dtm and depth to basement) at location x,y (real world coords)
 #
@@ -184,6 +189,32 @@ def get_dtm_hawaii(path_out, minlong,maxlong,minlat,maxlat):
     new_dataset.close()
     print("dtm geotif saved as",path_out)
 
+############################################
+# get dtm data from topography.org server and save as geotiff
+#
+# get_dtm(dtm_file, minlong,maxlong,minlat,maxlat)
+# Args:
+# dtm_file path to location where geotiff of elevation will be saved (in WGS84 lat/long) minlong,maxlong,minlat,maxlat min/max coordinates of region of interest
+# minlong,maxlong,minlat,maxlat bounding coordinates in at/long
+#
+# Extracts and saves to file digital terrain model from topography.org hosted data for world. Highest horizontal resolution is approx 30m m. 
+# Min/max lat/long in WGS84 
+# dtm_file is relative path filename.
+############################################
+
+def get_dtm_topography_org(path_out, minlong,maxlong,minlat,maxlat):
+
+    link='https://portal.opentopography.org/otr/getdem?demtype=SRTMGL3&west='+str(minlong)+'&south='+str(minlat)+'&east='+str(maxlong)+'&north='+str(maxlat)+'&outputFormat=GTiff'
+
+    print(link)
+    img = urlopen(link)
+   
+    f = open(path_out, 'wb')
+    f.write(img.read())
+    f.close()
+    print("dtm geotif saved as",path_out)
+    
+    
 ############################################
 # get dtm data from GA SRTM server and save as geotiff
 #
