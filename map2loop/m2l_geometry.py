@@ -1777,13 +1777,14 @@ def calc_thickness_with_grid(tmp_path,output_path,buffer,max_thickness_allowed,c
                                         min_pt=f
                                 if(min_dist<max_thickness_allowed): #if not too far, add to output
                                     true_thick=sin(radians(dip_mean))*min_dist
-                                    ostr="{},{},{},{},{},{},{},{},{},{},{},{},{}\n"\
-                                          .format(cx[k],cy[k],ctextcode[k],min_dist,int(true_thick),cl[k],cm[k],p1.x,p1.y,p2.x,p2.y,dip_mean,'full')
-                                    #ostr=str(cx[k])+','+str(cy[k])+','+ctextcode[k]+','+str(int(true_thick))+\
-                                    #    ','+str(cl[k])+','+str(cm[k])+','+str(lm)+','+str(mm)+','+str(nm)+','+\
-                                    #    str(p1.x)+','+str(p1.y)+','+str(p2.x)+','+str(p2.y)+','+str(dip_mean)+'\n'
-                                    fth.write(ostr)
-                                    n_est=n_est+1
+                                    if(not isnan(true_thick)):
+                                        ostr="{},{},{},{},{},{},{},{},{},{},{},{},{}\n"\
+                                              .format(cx[k],cy[k],ctextcode[k],min_dist,int(true_thick),cl[k],cm[k],p1.x,p1.y,p2.x,p2.y,dip_mean,'full')
+                                        #ostr=str(cx[k])+','+str(cy[k])+','+ctextcode[k]+','+str(int(true_thick))+\
+                                        #    ','+str(cl[k])+','+str(cm[k])+','+str(lm)+','+str(mm)+','+str(nm)+','+\
+                                        #    str(p1.x)+','+str(p1.y)+','+str(p2.x)+','+str(p2.y)+','+str(dip_mean)+'\n'
+                                        fth.write(ostr)
+                                        n_est=n_est+1
                             
             g=g+1
     print(n_est,'thickness estimates saved as',output_path+'formation_thicknesses.csv')
@@ -1858,14 +1859,15 @@ def calc_min_thickness_with_grid(tmp_path,output_path,buffer,max_thickness_allow
                                             crossings[i,4]=pt.y
                                             i=i+1
                                 else:
-                                    if(isects.distance(orig)<buffer*2):
-                                        #print(i,",", isects.x,",", isects.y,",",apair[1]['code'],",",apair[1]['group'])
-                                        crossings[i,0]=i
-                                        crossings[i,1]=int(apair['index'])
-                                        crossings[i,2]=0
-                                        crossings[i,3]=isects.x
-                                        crossings[i,4]=isects.y
-                                        i=i+1
+                                    if(not isects.geom_type=="GeometryCollection"):
+                                        if(isects.distance(orig)<buffer*2):
+                                            #print(i,",", isects.x,",", isects.y,",",apair[1]['code'],",",apair[1]['group'])
+                                            crossings[i,0]=i
+                                            crossings[i,1]=int(apair['index'])
+                                            crossings[i,2]=0
+                                            crossings[i,3]=isects.x
+                                            crossings[i,4]=isects.y
+                                            i=i+1
 
                                 if(i>0): #if we found any intersections with base of next higher unit
                                     min_dist=1e8
@@ -1877,16 +1879,18 @@ def calc_min_thickness_with_grid(tmp_path,output_path,buffer,max_thickness_allow
                                             min_pt=f
                                     if(min_dist<max_thickness_allowed and min_dist>1): #if not too far, add to output
                                         true_thick=sin(radians(dip_mean))*min_dist
-                                        ostr="{},{},{},{},{},{},{},{},{},{},{},{},{}\n"\
-                                              .format(cx[k],cy[k],ctextcode[k],min_dist,int(true_thick),cl[k],cm[k],p1.x,p1.y,p2.x,p2.y,dip_mean,'min')
-                                        #ostr=str(cx[k])+','+str(cy[k])+','+ctextcode[k]+','+str(int(true_thick))+\
-                                        #    ','+str(cl[k])+','+str(cm[k])+','+str(lm)+','+str(mm)+','+str(nm)+','+\
-                                        #    str(p1.x)+','+str(p1.y)+','+str(p2.x)+','+str(p2.y)+','+str(dip_mean)+'\n'
-                                        fth.write(ostr)
-                                        n_est=n_est+1
+                                        if( not isnan(true_thick)):
+                                            ostr="{},{},{},{},{},{},{},{},{},{},{},{},{}\n"\
+                                                  .format(cx[k],cy[k],ctextcode[k],min_dist,int(true_thick),cl[k],cm[k],p1.x,p1.y,p2.x,p2.y,dip_mean,'min')
+                                            #ostr=str(cx[k])+','+str(cy[k])+','+ctextcode[k]+','+str(int(true_thick))+\
+                                            #    ','+str(cl[k])+','+str(cm[k])+','+str(lm)+','+str(mm)+','+str(nm)+','+\
+                                            #    str(p1.x)+','+str(p1.y)+','+str(p2.x)+','+str(p2.y)+','+str(dip_mean)+'\n'
+                                            fth.write(ostr)
+                                            n_est=n_est+1
                             
             g=g+1
     print(n_est,'min thickness estimates appended to',output_path+'formation_thicknesses.csv')
+    fth.close() 
     
     
 ####################################
@@ -2008,8 +2012,8 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                         if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
                                             locations=[(midxr,midyr)]                  
                                             height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                            ostr="{},{},{},{},{},{},{}\n"\
-                                                .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"))
+                                            ostr="{},{},{},{},{},{},{},{}\n"\
+                                                .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
                                             #ostr=str(midxr)+','+str(midyr)+','+str(height)+','+str(dipdir)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                             f.write(ostr)
                                         
@@ -2019,8 +2023,8 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                         if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
                                             locations=[(midxl,midyl)]                  
                                             height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                            ostr="{},{},{},{},{},{},{}\n"\
-                                                .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"))
+                                            ostr="{},{},{},{},{},{},{},{}\n"\
+                                                .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
                                             #ostr=str(midxl)+','+str(midyl)+','+str(height)+','+str(dipdir+180)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                             f.write(ostr)
                                 first=False
@@ -2072,8 +2076,8 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                     if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
                                         locations=[(midxr,midyr)]                  
                                         height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                        ostr="{},{},{},{},{},{},{}\n"\
-                                            .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"))
+                                        ostr="{},{},{},{},{},{},{},{}\n"\
+                                            .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
                                         #ostr=str(midxr)+','+str(midyr)+','+str(height)+','+str(dipdir)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                         f.write(ostr)
                                     
@@ -2083,8 +2087,8 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                     if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
                                         locations=[(midxl,midyl)]                  
                                         height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                        ostr="{},{},{},{},{},{},{}\n"\
-                                            .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"))
+                                        ostr="{},{},{},{},{},{},{},{}\n"\
+                                            .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
                                         #ostr=str(midxl)+','+str(midyl)+','+str(height)+','+str(dipdir+180)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                         f.write(ostr)
                             first=False

@@ -320,15 +320,15 @@ def check_map(structure_file,geology_file,fault_file,mindep_file,fold_file,tmp_p
         raise NameError('map2loop error: Fix errors before running again')
     
     if(len(m2l_errors)==0):
-        if(len(folds)>0):
-            if(len(folds_clip)>0):
-                fold_file=tmp_path+'folds_clip.shp'
-                folds_explode=folds_explode.dropna(subset=['geometry'])
-                folds_explode.to_file(fold_file)         
-            else:
-                fold_file=tmp_path+'fold_clip.shp'
-                print("\nFold layer metadata\n--------------------")             
-                print("No folds found")
+
+        if(len(folds_clip)>0):
+            fold_file=tmp_path+'folds_clip.shp'
+            folds_explode=folds_explode.dropna(subset=['geometry'])
+            folds_explode.to_file(fold_file)         
+        else:
+            fold_file=tmp_path+'fold_clip.shp'
+            print("\nFold layer metadata\n--------------------")             
+            print("No folds found")
         
         if(len(faults_clip)>0):
             fault_file=tmp_path+'faults_clip.shp'

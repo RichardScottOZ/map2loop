@@ -63,8 +63,18 @@ def scipy_idw(x, y, z, xi, yi):
 # 
 # sci_py version of Radial Basis Function interpolation of observations z at x,y locations returned at locations defined by xi,yi arraysplot(x,y,z,grid)
 ######################################
-def scipy_rbf(x, y, z, xi, yi):
+def scipy_rbf_old(x, y, z, xi, yi):
     interp = Rbf(x, y, z,function='multiquadric',smooth=.15)
+    return interp(xi, yi)
+
+def scipy_rbf_LNDI(x, y, z, xi, yi): # actually LinearNDInterpolator
+    from scipy.interpolate import LinearNDInterpolator
+    interp = LinearNDInterpolator(list(zip(x, y)), z)
+    return interp(xi, yi)
+
+def scipy_rbf(x, y, z, xi, yi): # actually CloughTocher2DInterpolator
+    from scipy.interpolate import CloughTocher2DInterpolator
+    interp = CloughTocher2DInterpolator(list(zip(x, y)), z)
     return interp(xi, yi)
 
 ######################################
@@ -1850,7 +1860,9 @@ def process_fault_throw_and_near_faults_from_grid(tmp_path,output_path,dtm_repro
                 
                             
     fftc.close()
-    
+     fault_dim=pd.read_csv(output_path+'fault_dimensions.csv',",")
+    fault_dim.set_index('Fault',  inplace = True)
+   
     fault_orien=pd.read_csv(output_path+'fault_orientations.csv',",")
     fault_orien.set_index('formation',  inplace = True)
     f=open(output_path+'fault_displacements3.csv','w')
@@ -1859,26 +1871,31 @@ def process_fault_throw_and_near_faults_from_grid(tmp_path,output_path,dtm_repro
     for i in range (len(fdc)):
         r=int((yi[i]-bbox[1])/spacing)
         c=int((xi[i]-bbox[0])/spacing)
-
-        l,m,n=m2l_utils.ddd2dircos(dip_grid[r,c],dip_dir_grid[r,c])
-        lnorm=l/sqrt(pow(l,2)+pow(m,2))
-        mnorm=m/sqrt(pow(l,2)+pow(m,2))
+         if(not np.isnan(dip_dir_grid[r,c]) and not np.isnan(dip_grid[r,c])):
+            l,m,n=m2l_utils.ddd2dircos(dip_grid[r,c],dip_dir_grid[r,c])
+            lnorm=l/sqrt(pow(l,2)+pow(m,2))
+            mnorm=m/sqrt(pow(l,2)+pow(m,2))
         
-        # product of (rotation sign between bed dip direction and fault dip direction) 
-        # and appararent throw sign gives downthrown side relative to dip direction of fault
-        lf,mf,nf=m2l_utils.ddd2dircos(fault_orien.loc[fdc[i][2]]['dip'],fault_orien.loc[fdc[i][2]]['DipDirection'])
-        lfnorm=lf/sqrt(pow(lf,2)+pow(mf,2))
-        mfnorm=mf/sqrt(pow(lf,2)+pow(mf,2))
+            # product of (rotation sign between bed dip direction and fault dip direction) 
+            # and appararent throw sign gives downthrown side relative to dip direction of fault
+            lf,mf,nf=m2l_utils.ddd2dircos(fault_orien.loc[fdc[i][2]]['dip'],fault_orien.loc[fdc[i][2]]['DipDirection'])
+            lfnorm=lf/sqrt(pow(lf,2)+pow(mf,2))
+            mfnorm=mf/sqrt(pow(lf,2)+pow(mf,2))
         
-        dotproduct=fabs((fdc[i][0]*lnorm)+(fdc[i][1]*mnorm))
-        crossproduct= asin(lnorm * mfnorm - mnorm * lfnorm)
-        if(crossproduct*all_coordsdist[i]<0): 
-            down_dipdir=fault_orien.loc[fdc[i][2]]['DipDirection']
-        else:
-            down_dipdir=(fault_orien.loc[fdc[i][2]]['DipDirection']+180.0)%360
-
+            dotproduct=fabs((fdc[i][0]*lnorm)+(fdc[i][1]*mnorm))
+            crossproduct= asin(lnorm * mfnorm - mnorm * lfnorm)
+            if(crossproduct*all_coordsdist[i]<0): 
+                down_dipdir=fault_orien.loc[fdc[i][2]]['DipDirection']
+            else:
+                down_dipdir=(fault_orien.loc[fdc[i][2]]['DipDirection']+180.0)%360
+            v_d=all_coordsdist[i]*tan(radians(dotproduct*dip_grid[r,c]))
+            if(not np.isnan(v_d)):
+                vert_displacement=abs(int(all_coordsdist[i]*tan(radians(dotproduct*dip_grid[r,c]))))
+                if(vert_displacement>fault_dim.loc[fdc[i][2]]['HorizontalRadius']/10.0): #cap displacements more than 20% of fault length
+                    print('Fault',fdc[i][2], 'with displacement of',vert_displacement, 'capped to',fault_dim.loc[fdc[i][2]]['HorizontalRadius']/10.0)
+                    vert_displacement=fault_dim.loc[fdc[i][2]]['HorizontalRadius']/10.0
             
-        ostr=str(xi[i])+','+str(yi[i])+','+str(fdc[i][2])+','+str(int(all_coordsdist[i]))+','+str(abs(int(all_coordsdist[i]*tan(radians(dotproduct*dip_grid[r,c])))))+','+str(down_dipdir)+'\n'
+                ostr=str(xi[i])+','+str(yi[i])+','+str(fdc[i][2])+','+str(int(all_coordsdist[i]))+','+str(vert_displacement)+','+str(down_dipdir)+'\n'
         f.write(ostr)
 
     f.close()

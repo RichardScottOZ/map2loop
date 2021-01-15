@@ -106,10 +106,10 @@ def save_units(G,path_out,glabels,Australia,asud_strat_file):
                 warnings.warn(warning_msg)
                 GD.remove_edge(cy[0],cy[1])
         
-        plt.figure(p+1) #display strat graph for one group
-        plt.title(glabels[p])
-        nx.draw_networkx(GD, pos=nx.kamada_kawai_layout(GD), arrows=True,with_labels=False)
-        nx.draw_networkx_labels(GD,pos=nx.kamada_kawai_layout(GD), labels=labels, font_size=12,font_family='sans-serif')
+        #plt.figure(p+1) #display strat graph for one group
+        #plt.title(glabels[p])
+        #nx.draw_networkx(GD, pos=nx.kamada_kawai_layout(GD), arrows=True,with_labels=False)
+        #nx.draw_networkx_labels(GD,pos=nx.kamada_kawai_layout(GD), labels=labels, font_size=12,font_family='sans-serif')
         
         one=True
         if(one):
@@ -219,14 +219,14 @@ def save_group(G,path_out,glabels,geol,c_l):
     #display(gp_ages)
     gp_ages.set_index('group_',  inplace = True)
 
-    display(gp_ages)
+    print(gp_ages)
     gp_ids=[]
     nlist=list(G.nodes)
     for n in nlist: # Find out total number of groups and their names groups
         if('isGroup' in G.nodes[n]):
             Gp.add_nodes_from([n])
     
-    display(gp_ids)
+    print(gp_ids)
     for e in G.edges:
         if(G.nodes[e[0]]['gid']!=G.nodes[e[1]]['gid']):
             glabel_0=G.nodes[e[0]]['LabelGraphics']['text']
@@ -254,12 +254,12 @@ def save_group(G,path_out,glabels,geol,c_l):
         for f in GpD.edges:
             if(e[0]==f[1] and e[1]==f[0] and e[0]<f[0]): #arbitrary choice to ensure edge is not completely removed
                 Gp.remove_edge(e[0],e[1])
-    display(glabels)
-    plt.figure(1) #display strat graph for one group
-    plt.title("groups")
-    if(len(glabels)>1):
-        nx.draw_networkx(Gp, pos=nx.kamada_kawai_layout(Gp), arrows=True,with_labels=False)
-        nx.draw_networkx_labels(Gp,pos=nx.kamada_kawai_layout(Gp),  font_size=12,font_family='sans-serif')
+    print(glabels)
+    #plt.figure(1) #display strat graph for one group
+    #plt.title("groups")
+    #if(len(glabels)>1):
+        #nx.draw_networkx(Gp, pos=nx.kamada_kawai_layout(Gp), arrows=True,with_labels=False)
+        #nx.draw_networkx_labels(Gp,pos=nx.kamada_kawai_layout(Gp),  font_size=12,font_family='sans-serif')
 
     if(len(gp_ages)>10): # when lots of groups very large number of possibilities so short cut to first choice.
         glist=list(nx.topological_sort(Gp)) #all possible sorted directional graphs    
@@ -487,7 +487,7 @@ def parse_fault_relationships(graph_path,tmp_path,output_path):
 
     ff.close()
     
-    nx.draw(G, with_labels=True, font_weight='bold')
+    #nx.draw(G, with_labels=True, font_weight='bold')
     nx.write_gml(G, tmp_path+"fault_network.gml")  
     
     try:
@@ -803,7 +803,7 @@ def super_groups_and_groups(group_girdle,tmp_path,misorientation):
     group_girdle =pd.DataFrame.from_dict(group_girdle,orient='index')
     group_girdle.columns = ['plunge', 'bearing', 'num orientations']
     group_girdle.sort_values(by='num orientations', ascending=False,inplace=True)
-    display(group_girdle)
+    print(group_girdle)
 
 
     l,m,n=m2l_utils.ddd2dircos(group_girdle.iloc[0]['plunge'],group_girdle.iloc[0]['bearing'])

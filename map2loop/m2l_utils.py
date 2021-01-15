@@ -19,7 +19,7 @@ from owslib.wcs import WebCoverageService
 # output version number
 ############################################
 def v():
-    print('0.0.50')
+    print('0.0.51')
     
 ############################################
 # first test
