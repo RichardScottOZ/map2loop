@@ -76,7 +76,7 @@ def save_units(G,path_out,glabels,Australia,asud_strat_file):
                     glabel_1=GD.nodes[cy[i+1]]['LabelGraphics']['text']
                     edge=ASUD.loc[(ASUD['over'] == glabel_0) & (ASUD['under'] == glabel_1) ]
                     if(len(edge)==0 and (not('isGroup' in GD.nodes[cy[i]]) and not('isGroup' in GD.nodes[cy[i+1]]))):
-                        if(GD.has_edge(cy[i],cy[i+1])):
+                        if(not GD.has_edge(cy[i],cy[i+1])):
                             continue
                         else:
                             warning_msg='map2loop warning 1: Stratigraphic relationship: '+ str(GD.nodes[cy[i]]['LabelGraphics']['text'])+' overlies '+str(GD.nodes[cy[i+1]]['LabelGraphics']['text'])+' removed to prevent cycle'      
@@ -98,7 +98,8 @@ def save_units(G,path_out,glabels,Australia,asud_strat_file):
                     if(not found):
                         warning_msg='map2loop warning 2: Stratigraphic relationship: '+ str(GD.nodes[cy[0]]['LabelGraphics']['text'])+' overlies '+str(GD.nodes[cy[1]]['LabelGraphics']['text'])+' removed to prevent cycle'      
                         warnings.warn(warning_msg)
-                        GD.remove_edge(cy[0],cy[1])
+                        if( GD.has_edge(cy[len_cy-1],cy[0])):
+                            GD.remove_edge(cy[len_cy-1],cy[0])
                    
             else:
                 warning_msg='map2loop warning 3: Stratigraphic relationship: '+ str(GD.nodes[cy[0]]['LabelGraphics']['text'])+' overlies '+str(GD.nodes[cy[1]]['LabelGraphics']['text'])+' removed to prevent cycle'      
@@ -532,9 +533,16 @@ def save_geol_wkt(sub_geol,geology_file_csv,c_l,hint_flag):
         if(hint_flag==True and sub_geol.loc[i][c_l['c']] in hint_list ):
             hint=code_hints.loc[sub_geol.loc[i][c_l['c']]]['hint']
         else:
-            hint=0
-        min=float(sub_geol.loc[i][c_l['min']])+float(hint)
-        max=float(sub_geol.loc[i][c_l['max']])+float(hint)
+            hint=0.0
+        if(str(sub_geol.loc[i][c_l['min']])=='None'):
+            min=0.0
+        else:
+            min=float(sub_geol.loc[i][c_l['min']])+float(hint)
+        #print(str(sub_geol.loc[i][c_l['max']]))
+        if(str(sub_geol.loc[i][c_l['max']])=='None'):
+            max=4500000000
+        else:
+            max=float(sub_geol.loc[i][c_l['max']])+float(hint)
         #f.write("\""+str(sub_geol.loc[i][c_l['min']])+"\"\t")
         #f.write("\""+str(sub_geol.loc[i][c_l['max']])+"\"\t")
         f.write("\""+str(min)+"\"\t")

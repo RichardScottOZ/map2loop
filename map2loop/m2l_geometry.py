@@ -49,10 +49,10 @@ def save_orientations(structures,path_out,c_l,orientation_decimate,dtm,dtb,dtb_n
                                 dipdir=apoint[c_l['dd']]+90
                             else:
                                 dipdir=apoint[c_l['dd']]
-                            if(apoint[c_l['bo']]==c_l['btype']):
-                                polarity=0
-                            else:
+                            if(apoint[c_l['bo']]!=c_l['btype']):
                                 polarity=1
+                            else:
+                                polarity=0
                             ostr="{},{},{},{},{},{},{}\n"\
                                 .format(apoint['geometry'].x,apoint['geometry'].y,height,dipdir,apoint[c_l['d']],
                                         polarity,apoint[c_l['c']].replace(" ","_").replace("-","_"))   
@@ -2008,8 +2008,8 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                         if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
                                             locations=[(midxr,midyr)]                  
                                             height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                            ostr="{},{},{},{},{},{},{},{}\n"\
-                                                .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                            ostr="{},{},{},{},{},{},{}\n"\
+                                                .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"))
                                             #ostr=str(midxr)+','+str(midyr)+','+str(height)+','+str(dipdir)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                             f.write(ostr)
                                         
@@ -2019,8 +2019,8 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                         if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
                                             locations=[(midxl,midyl)]                  
                                             height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                            ostr="{},{},{},{},{},{},{},{}\n"\
-                                                .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                            ostr="{},{},{},{},{},{},{}\n"\
+                                                .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"))
                                             #ostr=str(midxl)+','+str(midyl)+','+str(height)+','+str(dipdir+180)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                             f.write(ostr)
                                 first=False
@@ -2072,8 +2072,8 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                     if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
                                         locations=[(midxr,midyr)]                  
                                         height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                        ostr="{},{},{},{},{},{},{},{}\n"\
-                                            .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                        ostr="{},{},{},{},{},{},{}\n"\
+                                            .format(midxr,midyr,height,dipdir2,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"))
                                         #ostr=str(midxr)+','+str(midyr)+','+str(height)+','+str(dipdir)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                         f.write(ostr)
                                     
@@ -2083,8 +2083,8 @@ def save_fold_axial_traces_orientations(path_folds,output_path,tmp_path,dtm,dtb,
                                     if(not str(structure_code.iloc[0][c_l['c']])=='nan'):
                                         locations=[(midxl,midyl)]                  
                                         height=m2l_utils.value_from_dtm_dtb(dtm,dtb,dtb_null,cover_map,locations)
-                                        ostr="{},{},{},{},{},{},{},{}\n"\
-                                            .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"),structure_code.iloc[0][c_l['g']])
+                                        ostr="{},{},{},{},{},{},{}\n"\
+                                            .format(midxl,midyl,height,dipdir2+180,int(dip),1,str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_"))
                                         #ostr=str(midxl)+','+str(midyl)+','+str(height)+','+str(dipdir+180)+','+str(int(dip))+',1,'+str(structure_code.iloc[0][c_l['c']]).replace(" ","_").replace("-","_")+','+str(structure_code.iloc[0][c_l['g']])+'\n'
                                         f.write(ostr)
                             first=False
