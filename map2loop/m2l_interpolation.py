@@ -63,7 +63,7 @@ def scipy_idw(x, y, z, xi, yi):
 # 
 # sci_py version of Radial Basis Function interpolation of observations z at x,y locations returned at locations defined by xi,yi arraysplot(x,y,z,grid)
 ######################################
-def scipy_rbf_old(x, y, z, xi, yi):
+def scipy_rbf(x, y, z, xi, yi):
     interp = Rbf(x, y, z,function='multiquadric',smooth=.15)
     return interp(xi, yi)
 
@@ -72,7 +72,7 @@ def scipy_rbf_LNDI(x, y, z, xi, yi): # actually LinearNDInterpolator
     interp = LinearNDInterpolator(list(zip(x, y)), z)
     return interp(xi, yi)
 
-def scipy_rbf(x, y, z, xi, yi): # actually CloughTocher2DInterpolator
+def scipy_rbf_CT(x, y, z, xi, yi): # actually CloughTocher2DInterpolator
     from scipy.interpolate import CloughTocher2DInterpolator
     interp = CloughTocher2DInterpolator(list(zip(x, y)), z)
     return interp(xi, yi)
@@ -1860,7 +1860,7 @@ def process_fault_throw_and_near_faults_from_grid(tmp_path,output_path,dtm_repro
                 
                             
     fftc.close()
-     fault_dim=pd.read_csv(output_path+'fault_dimensions.csv',",")
+    fault_dim=pd.read_csv(output_path+'fault_dimensions.csv',",")
     fault_dim.set_index('Fault',  inplace = True)
    
     fault_orien=pd.read_csv(output_path+'fault_orientations.csv',",")
@@ -1871,7 +1871,7 @@ def process_fault_throw_and_near_faults_from_grid(tmp_path,output_path,dtm_repro
     for i in range (len(fdc)):
         r=int((yi[i]-bbox[1])/spacing)
         c=int((xi[i]-bbox[0])/spacing)
-         if(not np.isnan(dip_dir_grid[r,c]) and not np.isnan(dip_grid[r,c])):
+        if(not np.isnan(dip_dir_grid[r,c]) and not np.isnan(dip_grid[r,c])):
             l,m,n=m2l_utils.ddd2dircos(dip_grid[r,c],dip_dir_grid[r,c])
             lnorm=l/sqrt(pow(l,2)+pow(m,2))
             mnorm=m/sqrt(pow(l,2)+pow(m,2))
